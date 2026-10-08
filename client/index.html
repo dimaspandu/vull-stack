@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="description"
+    content="A collection of short stories to read in a few quiet minutes."
+  >
+
+  <title>Short Stories</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="/assets/css/stories.css">
+</head>
+
+<body>
+  <main class="story-page">
+    <div class="story-page__container">
+
+      <header class="story-page__header">
+        <h1 class="story-page__title">
+          Short Stories
+        </h1>
+
+        <p class="story-page__description">
+          Small stories for a few quiet minutes.
+        </p>
+      </header>
+
+      <form
+        class="story-search"
+        action="/cerpen"
+        method="get"
+        role="search"
+      >
+        <label
+          class="story-search__label"
+          for="story-search"
+        >
+          Search stories
+        </label>
+
+        <div class="story-search__field">
+          <input
+            class="story-search__input"
+            id="story-search"
+            name="q"
+            type="search"
+            placeholder="Search stories..."
+            autocomplete="off"
+          >
+
+          <button
+            class="story-search__button"
+            type="submit"
+          >
+            Search
+          </button>
+        </div>
+      </form>
+
+      <section
+        class="story-list"
+        aria-labelledby="story-list-title"
+      >
+        <header class="story-list__header">
+          <h2
+            class="story-list__title"
+            id="story-list-title"
+          >
+            Latest stories
+          </h2>
+
+          <p class="story-list__count">
+            {{ len .Stories }} stories
+          </p>
+        </header>
+
+        <ul class="story-list__items">
+
+          {{ range .Stories }}
+
+          <li class="story-list__item">
+            <article class="story-card">
+              <a
+                class="story-card__link"
+                href="/{{ .Slug }}"
+              >
+                <div class="story-card__content">
+                  <p class="story-card__category">
+                    {{ .Category }}
+                  </p>
+
+                  <h3 class="story-card__title">
+                    {{ .Title }}
+                  </h3>
+
+                  <p class="story-card__excerpt">
+                    {{ .Excerpt }}
+                  </p>
+
+                  <div class="story-card__meta">
+                    <time datetime="2026-10-06">
+                      {{ .PublishedAt }}
+                    </time>
+
+                    <span aria-hidden="true">·</span>
+
+                    <span>
+                      {{ .ReadingTime }} min read
+                    </span>
+                  </div>
+                </div>
+              </a>
+            </article>
+          </li>
+
+          {{ end }}
+
+        </ul>
+      </section>
+
+      <!-- <div class="story-page__load-more">
+        <button
+          class="story-page__load-more-button"
+          type="button"
+        >
+          Load more
+        </button>
+      </div> -->
+
+    </div>
+  </main>
+</body>
+</html>

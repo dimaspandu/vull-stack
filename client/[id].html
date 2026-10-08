@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="description"
+    content="{{ .Title }} — {{ .Excerpt }}"
+  >
+
+  <title>{{ .Title }} — Short Stories</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="/assets/css/stories.css">
+</head>
+
+<body>
+  <main class="story-detail-page">
+    <div class="story-detail-page__container">
+
+      <nav
+        class="story-detail-page__navigation"
+        aria-label="Story navigation"
+      >
+        <a
+          class="story-detail-page__back"
+          href="/"
+        >
+          ← Back to stories
+        </a>
+      </nav>
+
+      <article class="story">
+
+        <header class="story__header">
+
+          <p class="story__category">
+            {{ .Category }}
+          </p>
+
+          <h1 class="story__title">
+            {{ .Title }}
+          </h1>
+
+          <div class="story__meta">
+            <time datetime="2026-10-06">
+              {{ .PublishedAt }}
+            </time>
+
+            <span aria-hidden="true">·</span>
+
+            <span>
+              {{ .ReadingTime }} min read
+            </span>
+          </div>
+
+        </header>
+
+        <div class="story__body">
+
+          {{ range .Content }}
+
+          <p>{{ . }}</p>
+          
+          {{ end }}
+
+        </div>
+
+      </article>
+
+    </div>
+  </main>
+</body>
+</html>

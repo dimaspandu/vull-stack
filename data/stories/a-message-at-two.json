@@ -1,0 +1,30 @@
+{
+  "data": {
+    "id": "story-006",
+    "slug": "a-message-at-two",
+    "title": "A Message at Two",
+    "category": "Mystery",
+    "excerpt": "At exactly two in the morning, his phone rang. The message contained only three words: \"I am home.\"",
+    "publishedAt": "2026-09-23T21:00:00+07:00",
+    "readingTime": 5,
+    "content": [
+      "The phone rang at exactly two in the morning.",
+      "No one ever called Daniel that late.",
+      "He reached for the phone and saw a message from a number he had deleted years ago.",
+      "\"I am home.\"",
+      "Daniel sat up in bed.",
+      "The number belonged to his older brother, who had disappeared twelve years earlier.",
+      "He stared at the message until the screen went dark.",
+      "Then another message arrived.",
+      "\"You still have the key.\"",
+      "Daniel remembered the small brass key hanging beside the front door.",
+      "He had kept it for twelve years without knowing why.",
+      "He walked downstairs and took it from the hook.",
+      "Outside, the street was completely empty.",
+      "At the end of the road stood the old house where the two brothers had grown up.",
+      "Its windows were dark.",
+      "Except for one.",
+      "A light was on in the upstairs bedroom."
+    ]
+  }
+}

@@ -16,46 +16,32 @@ func NewUsecase(repo *Repository) *Usecase {
 }
 
 func (u *Usecase) BrowseStories(ctx context.Context) (*StoryList, error) {
-	result, err := u.Repo.List(ctx)
+	stories, err := u.Repo.List(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	data := StoryList{
-		Stories: result.Data,
+		Stories: stories,
 	}
 
 	return &data, nil
 }
 
-func (u *Usecase) GetStoryBySlug(ctx context.Context, slug string) (*StoryShow, error) {
-	result, err := u.Repo.FindBySlug(ctx, slug)
+func (u *Usecase) GetStoryBySlug(ctx context.Context, slug string) (*Story, error) {
+	data, err := u.Repo.FindBySlug(ctx, slug)
 	if err != nil {
 		return nil, err
 	}
 
 	var publishedAt string
-	t, err := time.Parse(time.RFC3339, result.Data.PublishedAt)
+	t, err := time.Parse(time.RFC3339, data.PublishedAt)
 	if err != nil {
-		publishedAt = result.Data.PublishedAt
+		publishedAt = data.PublishedAt
 	} else {
 		publishedAt = t.Format("January 2, 2006, 3:04 PM")
 	}
+	data.PublishedAt = publishedAt
 
-	story := Story{
-		ID:          result.Data.ID,
-		Slug:        result.Data.Slug,
-		Title:       result.Data.Title,
-		Category:    result.Data.Category,
-		Excerpt:     result.Data.Excerpt,
-		PublishedAt: publishedAt,
-		ReadingTime: result.Data.ReadingTime,
-	}
-
-	data := StoryShow{
-		Story:   story,
-		Content: result.Data.Content,
-	}
-
-	return &data, nil
+	return data, nil
 }

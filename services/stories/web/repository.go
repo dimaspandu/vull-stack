@@ -2,46 +2,94 @@ package web_stories
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
-	"os"
 )
 
 type Repository struct {
-	Store string
+	DB *sql.DB
 }
 
-func NewRepository(store string) *Repository {
+func NewRepository(db *sql.DB) *Repository {
 	return &Repository{
-		Store: store,
+		DB: db,
 	}
 }
 
-func (r *Repository) List(ctx context.Context) (*StoryListResponse, error) {
-	data, err := os.ReadFile(r.Store + ".json")
+func (r *Repository) List(ctx context.Context) ([]Story, error) {
+	rows, err := r.DB.QueryContext(ctx, `
+		SELECT
+			id,
+			slug,
+			title,
+			category,
+			excerpt,
+			published_at,
+			reading_time
+		FROM stories
+		ORDER BY id DESC
+	`)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
-	var result StoryListResponse
+	stories := make([]Story, 0)
+	for rows.Next() {
+		var story Story
+		if err := rows.Scan(
+			&story.ID,
+			&story.Slug,
+			&story.Title,
+			&story.Category,
+			&story.Excerpt,
+			&story.PublishedAt,
+			&story.ReadingTime,
+		); err != nil {
+			return nil, err
+		}
+		stories = append(stories, story)
+	}
 
-	if err := json.Unmarshal(data, &result); err != nil {
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return &result, nil
+	return stories, nil
 }
 
-func (r *Repository) FindBySlug(ctx context.Context, slug string) (*StoryShowResponse, error) {
-	data, err := os.ReadFile(r.Store + "/" + slug + ".json")
-	if err != nil {
+func (r *Repository) FindBySlug(ctx context.Context, slug string) (*Story, error) {
+	var story Story
+	var contentJSON []byte
+
+	if err := r.DB.QueryRowContext(ctx, `
+		SELECT
+			id,
+			slug,
+			title,
+			category,
+			excerpt,
+			content,
+			published_at,
+			reading_time
+		FROM stories
+		WHERE slug = ?
+	`, slug).Scan(
+		&story.ID,
+		&story.Slug,
+		&story.Title,
+		&story.Category,
+		&story.Excerpt,
+		&contentJSON,
+		&story.PublishedAt,
+		&story.ReadingTime,
+	); err != nil {
 		return nil, err
 	}
 
-	var result StoryShowResponse
-
-	if err := json.Unmarshal(data, &result); err != nil {
+	if err := json.Unmarshal(contentJSON, &story.Content); err != nil {
 		return nil, err
 	}
 
-	return &result, nil
+	return &story, nil
 }

@@ -6,11 +6,11 @@
 	path = libs/ngapack
 	url = https://github.com/dimaspandu/ngapack.git
 	recurse = true
-[submodule "src/assets/js/libs/historypp"]
+[submodule "client/assets/js/libs/historypp"]
 	path = src/assets/js/libs/historypp
 	url = https://github.com/dimaspandu/historypp.git
 	recurse = true
-[submodule "src/assets/js/libs/dompp"]
+[submodule "client/assets/js/libs/dompp"]
 	path = src/assets/js/libs/dompp
 	url = https://github.com/dimaspandu/dompp.git
 	recurse = true

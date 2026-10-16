@@ -1,8 +1,10 @@
 package web_stories
 
 import (
+	"context"
 	"html/template"
 	"net/http"
+	"time"
 )
 
 type Handler struct {
@@ -16,9 +18,12 @@ func NewHandler(usecase *Usecase) *Handler {
 }
 
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
+	defer cancel()
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	data, err := h.Usecase.BrowseStories(r.Context())
+	data, err := h.Usecase.BrowseStories(ctx)
 	if err != nil {
 		http.Error(
 			w,
@@ -37,19 +42,20 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-
 	if err := tmpl.Execute(w, data); err != nil {
 		return
 	}
 }
 
 func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
+	defer cancel()
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	slug := r.PathValue("slug")
 
-	data, err := h.Usecase.GetStoryBySlug(r.Context(), slug)
+	data, err := h.Usecase.GetStoryBySlug(ctx, slug)
 	if err != nil {
 		http.Error(
 			w,
@@ -68,8 +74,6 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 		)
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
 
 	if err := tmpl.Execute(w, data); err != nil {
 		return

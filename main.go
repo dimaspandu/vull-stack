@@ -9,6 +9,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 
+	api_stories "github.com/dimaspandu/vull-stack/services/stories/api"
 	web_stories "github.com/dimaspandu/vull-stack/services/stories/web"
 )
 
@@ -41,13 +42,20 @@ func main() {
 		log.Fatal(err)
 	}
 
-	sortStoryRepo := web_stories.NewRepository(db)
-	sortStoryUsecase := web_stories.NewUsecase(sortStoryRepo)
-	sortStoryHandler := web_stories.NewHandler(sortStoryUsecase)
+	webStoriesRepo := web_stories.NewRepository(db)
+	webStoriesUsecase := web_stories.NewUsecase(webStoriesRepo)
+	webStoriesHandler := web_stories.NewHandler(webStoriesUsecase)
 
-	mux.HandleFunc("GET /{$}", sortStoryHandler.List)
+	mux.HandleFunc("GET /{$}", webStoriesHandler.List)
 	mux.Handle("GET /favicon.ico", http.NotFoundHandler())
-	mux.HandleFunc("GET /{slug}", sortStoryHandler.Show)
+	mux.HandleFunc("GET /{slug}", webStoriesHandler.Show)
+
+	apiStoriesRepo := api_stories.NewRepository(db)
+	apiStoriesUseCase := api_stories.NewUsecase(apiStoriesRepo)
+	apiStoriesHandler := api_stories.NewHandler(apiStoriesUseCase)
+
+	mux.HandleFunc("GET /api/stories", apiStoriesHandler.List)
+	mux.HandleFunc("GET /api/stories/{id}", apiStoriesHandler.Show)
 
 	srv := http.Server{
 		Addr:         ":6060",

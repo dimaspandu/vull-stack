@@ -1,7 +1,7 @@
 package web_stories
 
 type Story struct {
-	ID          string   `json:"id"`
+	ID          int      `json:"id"`
 	Slug        string   `json:"slug"`
 	Title       string   `json:"title"`
 	Category    string   `json:"category"`

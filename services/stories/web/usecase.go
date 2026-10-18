@@ -22,6 +22,7 @@ func (u *Usecase) BrowseStories(ctx context.Context, q string) (*StoryList, erro
 	}
 
 	data := StoryList{
+		Query: q,
 		Stories: stories,
 	}
 

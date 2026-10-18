@@ -12,5 +12,6 @@ type Story struct {
 }
 
 type StoryList struct {
+	Query   string
 	Stories []Story
 }

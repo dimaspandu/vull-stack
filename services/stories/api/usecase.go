@@ -12,28 +12,28 @@ func NewUsecase(repo *Repository) *Usecase {
 	}
 }
 
-func (u *Usecase) BrowseStories(ctx context.Context) (*StoryListResponse, error) {
+func (u *Usecase) ListStories(ctx context.Context) (*StoryListResponse, error) {
 	stories, err := u.Repo.List(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	res := &StoryListResponse{
+	out := &StoryListResponse{
 		Data: stories,
 	}
 
-	return res, nil
+	return out, nil
 }
 
-func (u *Usecase) GetStoryDetails(ctx context.Context, storyId string) (*StoryShowResponse, error) {
-	story, err := u.Repo.FindBySlug(ctx, storyId)
+func (u *Usecase) GetStory(ctx context.Context, storyID string) (*StoryShowResponse, error) {
+	story, err := u.Repo.GetByID(ctx, storyID)
 	if err != nil {
 		return nil, err
 	}
 
-	res := &StoryShowResponse{
+	out := &StoryShowResponse{
 		Data: story,
 	}
 
-	return res, nil
+	return out, nil
 }

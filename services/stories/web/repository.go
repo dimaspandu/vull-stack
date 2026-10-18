@@ -88,7 +88,7 @@ func (r *Repository) List(ctx context.Context, q string) ([]Story, error) {
 	return stories, nil
 }
 
-func (r *Repository) FindBySlug(ctx context.Context, slug string) (*Story, error) {
+func (r *Repository) GetBySlug(ctx context.Context, slug string) (*Story, error) {
 	var story Story
 	var contentJSON []byte
 

@@ -23,16 +23,17 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	res, err := h.Usecase.BrowseStories(ctx)
+	result, err := h.Usecase.ListStories(ctx)
 	if err != nil {
 		http.Error(
 			w,
 			"Failed to load stories.",
 			http.StatusInternalServerError,
 		)
+		return
 	}
 
-	json.NewEncoder(w).Encode(res)
+	json.NewEncoder(w).Encode(result)
 }
 
 func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
@@ -41,16 +42,17 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	storyId := r.PathValue("id")
+	storyID := r.PathValue("id")
 
-	res, err := h.Usecase.GetStoryDetails(ctx, storyId)
+	result, err := h.Usecase.GetStory(ctx, storyID)
 	if err != nil {
 		http.Error(
 			w,
 			"Failed to load story.",
 			http.StatusInternalServerError,
 		)
+		return
 	}
 
-	json.NewEncoder(w).Encode(res)
+	json.NewEncoder(w).Encode(result)
 }

@@ -58,14 +58,23 @@ func (r *Repository) List(ctx context.Context) ([]Story, error) {
 	return stories, nil
 }
 
-func (r *Repository) FindBySlug(ctx context.Context, storyId string) (*Story, error) {
+func (r *Repository) GetByID(ctx context.Context, storyID string) (*Story, error) {
 	var story Story
 	var contentJSON []byte
 
 	if err := r.DB.QueryRowContext(ctx, `
-		SELECT * FROM stories
+		SELECT
+			id,
+			slug,
+			title,
+			category,
+			excerpt,
+			content,
+			published_at,
+			reading_time
+		FROM stories
 		WHERE id = ?
-	`, storyId).Scan(
+	`, storyID).Scan(
 		&story.ID,
 		&story.Slug,
 		&story.Title,

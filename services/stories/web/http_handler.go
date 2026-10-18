@@ -25,13 +25,14 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 
 	q := r.URL.Query().Get("q")
 
-	data, err := h.Usecase.BrowseStories(ctx, q)
+	pageData, err := h.Usecase.ListStories(ctx, q)
 	if err != nil {
 		http.Error(
 			w,
 			"Failed to load stories.",
 			http.StatusInternalServerError,
 		)
+		return
 	}
 
 	tmpl, err := template.ParseFiles("client/index.html")
@@ -44,7 +45,12 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := tmpl.Execute(w, data); err != nil {
+	if err := tmpl.Execute(w, pageData); err != nil {
+		http.Error(
+			w,
+			"Failed to render template.",
+			http.StatusInternalServerError,
+		)
 		return
 	}
 }
@@ -57,7 +63,7 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 
 	slug := r.PathValue("slug")
 
-	data, err := h.Usecase.GetStoryBySlug(ctx, slug)
+	story, err := h.Usecase.GetStoryBySlug(ctx, slug)
 	if err != nil {
 		http.Error(
 			w,
@@ -77,7 +83,12 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := tmpl.Execute(w, data); err != nil {
+	if err := tmpl.Execute(w, story); err != nil {
+		http.Error(
+			w,
+			"Failed to render template.",
+			http.StatusInternalServerError,
+		)
 		return
 	}
 }

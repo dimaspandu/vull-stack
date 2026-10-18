@@ -15,8 +15,8 @@ func NewUsecase(repo *Repository) *Usecase {
 	}
 }
 
-func (u *Usecase) BrowseStories(ctx context.Context) (*StoryList, error) {
-	stories, err := u.Repo.List(ctx)
+func (u *Usecase) BrowseStories(ctx context.Context, q string) (*StoryList, error) {
+	stories, err := u.Repo.List(ctx, q)
 	if err != nil {
 		return nil, err
 	}

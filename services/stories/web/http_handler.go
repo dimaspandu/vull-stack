@@ -23,7 +23,9 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	data, err := h.Usecase.BrowseStories(ctx)
+	q := r.URL.Query().Get("q")
+
+	data, err := h.Usecase.BrowseStories(ctx, q)
 	if err != nil {
 		http.Error(
 			w,

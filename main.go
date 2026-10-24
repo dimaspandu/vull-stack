@@ -11,6 +11,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 
+	jsxtranspiler "github.com/dimaspandu/vull-stack/internal/jsxtranspiler"
 	api_stories "github.com/dimaspandu/vull-stack/services/stories/api"
 	web_stories "github.com/dimaspandu/vull-stack/services/stories/web"
 )
@@ -27,6 +28,25 @@ func main() {
 	mux := http.NewServeMux()
 
 	fs := http.FileServer(http.Dir("client/assets/"))
+
+	mux.HandleFunc("GET /assets/js/domain/stories/view.jsx", func(w http.ResponseWriter, r *http.Request) {
+		src, err := os.ReadFile("client/assets/js/domain/stories/view.jsx")
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+		fmt.Println(string(src))
+		out, err := jsxtranspiler.Compile(string(src), "elementBuilder")
+		if err != nil {
+			http.Error(w, "jsx transpile error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
+		w.Header().Set("Cache-Control", "no-cache")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(out))
+	})
+
 	mux.Handle("/assets/", http.StripPrefix("/assets/", fs))
 
 	dsn := fmt.Sprintf(

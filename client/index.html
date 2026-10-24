@@ -28,7 +28,7 @@
 </head>
 
 <body>
-  <main class="story-page">
+  <main class="story-page" id="outlet">
     <div class="story-page__container">
 
       <header class="story-page__header">
@@ -43,6 +43,7 @@
 
       <form
         class="story-search"
+        id="story-search"
         action="/"
         method="get"
         role="search"
@@ -50,7 +51,6 @@
         <div class="story-search__field">
           <input
             class="story-search__input"
-            id="story-search"
             name="q"
             type="search"
             placeholder="Search stories..."
@@ -86,7 +86,7 @@
 
         {{ if .Stories }}
 
-        <ul class="story-list__items">
+        <ul class="story-list__items" id="story-list-items">
 
           {{ range .Stories }}
 
@@ -95,6 +95,7 @@
               <a
                 class="story-card__link"
                 href="/{{ .Slug }}"
+                data-link
               >
                 <div class="story-card__content">
                   <p class="story-card__category">
@@ -160,7 +161,7 @@
               Try a different keyword.
             </p>
 
-            <a class="story-alert__link" href="/">
+            <a class="story-alert__link" href="/" data-link>
               Browse all stories
               <span aria-hidden="true">→</span>
             </a>
@@ -173,5 +174,11 @@
 
     </div>
   </main>
+
+  <script id="stories-data" type="application/json">
+    {{ .Stories }}
+  </script>
+
+  <script type="module" src="/assets/js/index.js"></script>
 </body>
 </html>

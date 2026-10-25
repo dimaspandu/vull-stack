@@ -25,8 +25,8 @@ func (u *Usecase) ListStories(ctx context.Context) (*StoryListResponse, error) {
 	return out, nil
 }
 
-func (u *Usecase) GetStory(ctx context.Context, storyID string) (*StoryShowResponse, error) {
-	story, err := u.Repo.GetByID(ctx, storyID)
+func (u *Usecase) GetStory(ctx context.Context, slug string) (*StoryShowResponse, error) {
+	story, err := u.Repo.GetByID(ctx, slug)
 	if err != nil {
 		return nil, err
 	}

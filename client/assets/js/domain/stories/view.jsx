@@ -1,6 +1,6 @@
 import elementBuilder from "../../factories/elementBuilder.js";
 
-function renderStoryListItem({
+function StoryListItem({
   slug,
   category,
   title,
@@ -14,6 +14,7 @@ function renderStoryListItem({
         <a
           class="story-card__link"
           href={`/${slug}`}
+          data-link
         >
           <div class="story-card__content">
             <p class="story-card__category">
@@ -106,25 +107,9 @@ export default function view({
           </p>
         </header>
 
-        {story.length > 0 ? (
+        {stories.length > 0 ? (
           <ul class="story-list__items" id="story-list-items">
-
-            {stories.map(({
-              slug,
-              category,
-              title,
-              excerpt,
-              publishedAt,
-              readingTime
-            } = story) => renderStoryListItem({
-              slug,
-              category,
-              title,
-              excerpt,
-              publishedAt,
-              readingTime
-            }))}
-
+            {stories.map(story => <StoryListItem { ...story } />)}
           </ul>
         ) : (
           <div class="story-alert" role="status">
@@ -156,7 +141,7 @@ export default function view({
                 Try a different keyword.
               </p>
 
-              <a class="story-alert__link" href="/">
+              <a class="story-alert__link" href="/" data-link>
                 Browse all stories
                 <span aria-hidden="true">→</span>
               </a>

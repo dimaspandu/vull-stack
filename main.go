@@ -35,7 +35,23 @@ func main() {
 			http.NotFound(w, r)
 			return
 		}
-		fmt.Println(string(src))
+		out, err := jsxtranspiler.Compile(string(src), "elementBuilder")
+		if err != nil {
+			http.Error(w, "jsx transpile error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
+		w.Header().Set("Cache-Control", "no-cache")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(out))
+	})
+
+	mux.HandleFunc("GET /assets/js/domain/story/view.jsx", func(w http.ResponseWriter, r *http.Request) {
+		src, err := os.ReadFile("client/assets/js/domain/story/view.jsx")
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
 		out, err := jsxtranspiler.Compile(string(src), "elementBuilder")
 		if err != nil {
 			http.Error(w, "jsx transpile error: "+err.Error(), http.StatusInternalServerError)
@@ -87,7 +103,7 @@ func main() {
 	apiH := api_stories.NewHandler(apiUC)
 
 	mux.HandleFunc("GET /api/stories", apiH.List)
-	mux.HandleFunc("GET /api/stories/{id}", apiH.Show)
+	mux.HandleFunc("GET /api/stories/{slug}", apiH.Show)
 
 	port := getenv("APP_PORT", "6060")
 	srv := &http.Server{

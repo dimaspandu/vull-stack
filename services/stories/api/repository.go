@@ -58,7 +58,7 @@ func (r *Repository) List(ctx context.Context) ([]Story, error) {
 	return stories, nil
 }
 
-func (r *Repository) GetByID(ctx context.Context, storyID string) (*Story, error) {
+func (r *Repository) GetByID(ctx context.Context, slug string) (*Story, error) {
 	var story Story
 	var contentJSON []byte
 
@@ -73,8 +73,8 @@ func (r *Repository) GetByID(ctx context.Context, storyID string) (*Story, error
 			published_at,
 			reading_time
 		FROM stories
-		WHERE id = ?
-	`, storyID).Scan(
+		WHERE slug = ?
+	`, slug).Scan(
 		&story.ID,
 		&story.Slug,
 		&story.Title,

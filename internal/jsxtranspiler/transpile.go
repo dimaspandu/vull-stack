@@ -136,12 +136,12 @@ func (t *transpiler) readExpression() (string, error) {
 			if depth == 0 {
 				expr := strings.TrimSpace(string(t.src[start:t.i]))
 				t.i++
-				return expr, nil
+				return Compile(expr, t.factory)
 			}
 		}
 		t.i++
 	}
-	return strings.TrimSpace(string(t.src[start:t.i])), nil
+	return "", t.errorf("Unclosed expression")
 }
 
 func (t *transpiler) readAttributeValue() (string, error) {
@@ -173,10 +173,14 @@ func (t *transpiler) readAttributes() ([]attr, bool, error) {
 			t.i++
 			return attrs, false, nil
 		}
-		if t.i+2 < len(t.src) && t.src[t.i] == '{' && t.src[t.i+1] == '.' && t.src[t.i+2] == '.' && t.src[t.i+3] == '.' {
+		if t.i < len(t.src) && t.src[t.i] == '{' {
 			expr, err := t.readExpression()
 			if err != nil {
 				return nil, false, err
+			}
+			expr = strings.TrimSpace(expr)
+			if !strings.HasPrefix(expr, "...") {
+				return nil, false, t.errorf("Expected spread attribute")
 			}
 			attrs = append(attrs, attr{spread: strings.TrimSpace(expr[3:])})
 			continue
@@ -251,14 +255,18 @@ func (t *transpiler) parseElement() (string, error) {
 		return "", err
 	}
 	props := t.buildProps(attrs)
+	tagRef := strconv.Quote(tag)
+	if tag[0] >= 'A' && tag[0] <= 'Z' {
+		tagRef = tag
+	}
 	if selfClosing {
-		return fmt.Sprintf("%s(%s, %s)", t.factory, strconv.Quote(tag), props), nil
+		return fmt.Sprintf("%s(%s, %s)", t.factory, tagRef, props), nil
 	}
 	children, err := t.parseChildren(tag)
 	if err != nil {
 		return "", err
 	}
-	args := []string{strconv.Quote(tag), props}
+	args := []string{tagRef, props}
 	args = append(args, children...)
 	return fmt.Sprintf("%s(%s)", t.factory, strings.Join(args, ", ")), nil
 }

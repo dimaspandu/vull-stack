@@ -1,17 +1,18 @@
+import { bindLinkNavigation } from "../../utils/common.js";
+
 export default function listHandler(outlet) {
   return {
     onMeet: async (ctx) => {
       if (!ctx.isInitialRoute) {
-        const { default: view } = await import("../stories/view.jsx");
+        const { default: view } = await import("./view.jsx");
 
         try {
           const response = await fetch("/api/stories");
           if (!response.ok) {
             throw new Error(`Response status: ${response.status}`);
           }
-
           const result = await response.json();
-          console.log(result);
+
           outlet
             .setAttributes({ class: "story-page" })
             .setChildren(
@@ -24,6 +25,8 @@ export default function listHandler(outlet) {
           console.error(error.message);
         }
       } else {}
+
+      bindLinkNavigation();
     },
   };
   // return {
@@ -70,30 +73,4 @@ export default function listHandler(outlet) {
       // );
     // },
   // };
-}
-
-async function handleOnMeet(outlet) {
-  if (!ctx.isInitialRoute) {
-    const { default: view } = await import("./view.jsx");
-
-    try {
-      const response = await fetch("/api/stories");
-      if (!response.ok) {
-        throw new Error(`Response status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log(result);
-      outlet
-        .setAttributes({ class: "story-page" })
-        .setChildren(
-          view({
-            query: "",
-            stories: result.data,
-          })
-        );
-    } catch (error) {
-      console.error(error.message);
-    }
-  } else {}
 }

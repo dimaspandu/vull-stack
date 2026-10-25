@@ -42,9 +42,9 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	storyID := r.PathValue("id")
+	slug := r.PathValue("slug")
 
-	result, err := h.Usecase.GetStory(ctx, storyID)
+	result, err := h.Usecase.GetStory(ctx, slug)
 	if err != nil {
 		http.Error(
 			w,

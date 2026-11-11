@@ -50,11 +50,50 @@ function StoryListItem({
   );
 }
 
-export default function view({
-  query,
-  stories,
-}) {
+export function EmptyState() {
   return (
+    <div class="story-alert" role="status">
+      <div class="story-alert__icon" aria-hidden="true">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 11v5" />
+          <path d="M12 8h.01" />
+        </svg>
+      </div>
+
+      <div class="story-alert__content">
+        <h3 class="story-alert__title">
+          No stories found
+        </h3>
+
+        <p class="story-alert__description">
+          We couldn't find any stories matching your search.
+          Try a different keyword.
+        </p>
+
+        <a class="story-alert__link" href="/" data-link>
+          Browse all stories
+          <span aria-hidden="true">→</span>
+        </a>
+      </div>
+    </div>
+  );
+}
+
+export default function createStoriesView(viewModel) {
+  const { stories, query } = viewModel;
+  
+  return componentBuilder(() => (
     <div class="story-page__container">
 
       <header class="story-page__header">
@@ -117,46 +156,10 @@ export default function view({
           <ul class="story-list__items" id="story-list-items">
             {stories.map(story => <StoryListItem { ...story } />)}
           </ul>
-        ) : (
-          <div class="story-alert" role="status">
-            <div class="story-alert__icon" aria-hidden="true">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.7"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <circle cx="12" cy="12" r="9" />
-                <path d="M12 11v5" />
-                <path d="M12 8h.01" />
-              </svg>
-            </div>
-
-            <div class="story-alert__content">
-              <h3 class="story-alert__title">
-                No stories found
-              </h3>
-
-              <p class="story-alert__description">
-                We could not find any stories matching your search.
-                Try a different keyword.
-              </p>
-
-              <a class="story-alert__link" href="/" data-link>
-                Browse all stories
-                <span aria-hidden="true">→</span>
-              </a>
-            </div>
-          </div>
-        )}
+        ) : <EmptyState />}
 
       </section>
 
     </div>
-  );
+  ));
 }

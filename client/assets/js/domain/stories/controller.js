@@ -5,16 +5,19 @@ import createStoriesViewModel from "./viewModel.js";
 export default async function listController(ctx, outlet) {
   const repository = createStoriesRepository();
   const viewModel = await createStoriesViewModel(ctx, repository);
-  const view = createStoriesView(viewModel);
+  const {
+    mainView,
+    storyListView,
+  } = createStoriesView(viewModel);
 
-  viewModel.addListener(() => view.rerender());
+  viewModel.addListener(() => storyListView.rerender());
 
   if (ctx.firstArrive && ctx.isInitialRoute){
-    elementBuilder(outlet).setChildren(view.render());
+    elementBuilder(outlet).setChildren(mainView);
   } else {
     elementBuilder(outlet)
       .reset()
       .setAttributes({ class: "story-page" })
-      .setChildren(view.render());
+      .setChildren(mainView);
   }
 }

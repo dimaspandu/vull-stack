@@ -50,7 +50,7 @@ function StoryListItem({
   );
 }
 
-export function EmptyState() {
+function EmptyState() {
   return (
     <div class="story-alert" role="status">
       <div class="story-alert__icon" aria-hidden="true">
@@ -90,10 +90,40 @@ export function EmptyState() {
   );
 }
 
+function StoryList({ stories }) {
+  return componentBuilder(() => (
+    <section
+      class="story-list"
+      aria-labelledby="story-list-title"
+    >
+      <header class="story-list__header">
+        <h2
+          class="story-list__title"
+          id="story-list-title"
+        >
+          Latest stories
+        </h2>
+
+        <p class="story-list__count">
+          {stories.length} stories
+        </p>
+      </header>
+
+      {stories.length > 0 ? (
+        <ul class="story-list__items" id="story-list-items">
+          {stories.map(story => <StoryListItem { ...story } />)}
+        </ul>
+      ) : <EmptyState />}
+
+    </section>
+  ));
+}
+
 export default function createStoriesView(viewModel) {
   const { stories, query } = viewModel;
   
-  return componentBuilder(() => (
+  const storyListView = <StoryList stories={stories} />
+  const mainView = (
     <div class="story-page__container">
 
       <header class="story-page__header">
@@ -135,31 +165,13 @@ export default function createStoriesView(viewModel) {
         </div>
       </form>
 
-      <section
-        class="story-list"
-        aria-labelledby="story-list-title"
-      >
-        <header class="story-list__header">
-          <h2
-            class="story-list__title"
-            id="story-list-title"
-          >
-            Latest stories
-          </h2>
-
-          <p class="story-list__count">
-            {stories.length} stories
-          </p>
-        </header>
-
-        {stories.length > 0 ? (
-          <ul class="story-list__items" id="story-list-items">
-            {stories.map(story => <StoryListItem { ...story } />)}
-          </ul>
-        ) : <EmptyState />}
-
-      </section>
+      {storyListView.render()}
 
     </div>
-  ));
+  );
+
+  return {
+    mainView,
+    storyListView,
+  };
 }

@@ -1,29 +1,50 @@
-import { bindLinkNavigation } from "../../utils/common.js";
+export default async function showHandler(ctx, outlet) {
+  if (ctx.firstArrive && ctx.isInitialRoute) {
+    const { default: view } = await import("../story/view.jsx");
 
-export default function showHandler() {
-  return {
-    onMeet: async (ctx) => {
-      if (!ctx.isInitialRoute) {
-        const { default: view } = await import("../story/view.jsx");
+    const story = JSON.parse(
+      document.getElementById("story-data").textContent
+    );
 
-        try {
-          const response = await fetch(`/api/stories/${ctx.params.slug}`);
-          if (!response.ok) {
-            throw new Error(`Response status: ${response.status}`);
-          }
-          const result = await response.json();
+    elementBuilder(outlet).setChildren(
+      view({
+        category: story.category,
+        title: story.title,
+        content: story.content,
+        publishedAt: story.publishedAt,
+        readingTime: story.readingTime,
+      })
+    );
+  } else {
+    const { default: view } = await import("./view.jsx");
 
-          outlet
-            .setAttributes({ class: "story-detail-page" })
-            .setChildren(
-              view(result.data)
-            );
-        } catch (error) {
-          console.error(error.message);
-        }
-      } else {}
+    try {
+      const response = await fetch(`/api/stories/${ctx.params.slug}`);
+      if (!response.ok) {
+        throw new Error(`Response status: ${response.status}`);
+      }
+      const result = await response.json();
+      const story = result.data;
 
-      bindLinkNavigation();
+      elementBuilder(outlet)
+        .reset()
+        .setAttributes({ class: "story-detail-page" })
+        .setChildren(
+          view({
+            category: story.category,
+            title: story.title,
+            content: story.content,
+            publishedAt: story.publishedAt,
+            readingTime: story.readingTime,
+          })
+        );
+    } catch (error) {
+      elementBuilder(outlet)
+        .reset()
+        .setAttributes({ class: "story-detail-page" })
+        .setChildren(
+          elementBuilder("h1", null, "Internal Server Error.")
+        );
     }
-  };
+  }
 }

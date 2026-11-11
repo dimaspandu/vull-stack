@@ -1,5 +1,4 @@
-import elementBuilder from "../../factories/elementBuilder.js";
-
+/** @jsx elementBuilder */
 function StoryListItem({
   slug,
   category,
@@ -15,6 +14,10 @@ function StoryListItem({
           class="story-card__link"
           href={`/${slug}`}
           data-link
+          onClick={e => {
+            e.preventDefault();
+            history.navigatePush(`/${slug}`);
+          }}
         >
           <div class="story-card__content">
             <p class="story-card__category">
@@ -70,6 +73,9 @@ export default function view({
         action="/"
         method="get"
         role="search"
+        onSubmit={(e) => {
+          e.preventDefault();
+        }}
       >
         <div class="story-search__field">
           <input

@@ -1,5 +1,4 @@
-import elementBuilder from "../../factories/elementBuilder.js";
-
+/** @jsx elementBuilder */
 export default function view({
   category,
   title,
@@ -18,6 +17,10 @@ export default function view({
           class="story-detail-page__back"
           href="/"
           data-link
+          onClick={e => {
+            e.preventDefault();
+            history.back();
+          }}
         >
           ← Back to stories
         </a>

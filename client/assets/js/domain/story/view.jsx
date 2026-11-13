@@ -1,5 +1,5 @@
 /** @jsx elementBuilder */
-export default function view({
+function StoryDetail({
   category,
   title,
   content,
@@ -62,4 +62,46 @@ export default function view({
 
     </div>
   );
+}
+
+function ErrorState() {
+  return elementBuilder("h1", null, "Internal Server Error.");
+}
+
+function EmptyState() {
+  return elementBuilder("h1", null, "Story not found.");
+}
+
+export default function createStoryView(viewModel) {
+  const storyView = componentBuilder(() => {
+    if (viewModel.error) {
+      return ErrorState();
+    }
+
+    if (!viewModel.story) {
+      return EmptyState();
+    }
+
+    const {
+      category,
+      title,
+      content,
+      publishedAt,
+      readingTime
+    } = viewModel.story;
+
+    return (
+      <StoryDetail
+        category={category}
+        title={title}
+        content={content}
+        publishedAt={publishedAt}
+        readingTime={readingTime}
+      />
+    );
+  });
+
+  viewModel.addListener(() => storyView.rerender());
+
+  return storyView.render();
 }

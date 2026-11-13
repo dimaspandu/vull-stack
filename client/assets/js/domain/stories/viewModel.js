@@ -1,5 +1,6 @@
 export default function createStoriesViewModel(repository) {
   const listeners = new Set();
+  let allStories = [];
 
   const viewModel = {
     stories: [],
@@ -9,26 +10,53 @@ export default function createStoriesViewModel(repository) {
 
     async _load(ctx) {
       this.loading = true;
-      this.error = null;
       this.notifyListener();
 
       try {
-        // Ambil query dari ctx router (misal ctx.query.q)
+        allStories = await repository.getStories(ctx);
+        this.stories = allStories;
+        
         if (ctx?.query?.q) {
           this.query = ctx.query.q;
-        } else {
-          this.query = "";
+          this.filterStories(this.query);
         }
-
-        // Repository akan otomatis mendeteksi apakah ini firstArrive (SSR/DOM) atau fetch API biasa
-        this.stories = await repository.getStories(ctx);
       } catch (err) {
-        this.error = err.message || "Failed to load stories";
+        this.error = err.message;
         this.stories = [];
       } finally {
         this.loading = false;
         this.notifyListener();
       }
+    },
+
+    // 1. Core logic pencarian & filter string
+    searchStories(keyword) {
+      this.query = keyword;
+      this.filterStories(keyword);
+      this.notifyListener();
+    },
+
+    // 2. Event handler khusus form submit (bersih dari urusan view)
+    handleSearchSubmit(event) {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      const query = formData.get("q")?.trim() || "";
+      
+      // Cukup panggil method searchStories yang sudah ada!
+      this.searchStories(query);
+    },
+
+    filterStories(keyword) {
+      if (!keyword.trim()) {
+        this.stories = allStories;
+        return;
+      }
+      const lower = keyword.toLowerCase();
+      this.stories = allStories.filter(story => 
+        story.title.toLowerCase().includes(lower) ||
+        story.excerpt.toLowerCase().includes(lower) ||
+        story.category.toLowerCase().includes(lower)
+      );
     },
 
     addListener(listener) {

@@ -142,9 +142,7 @@ export default function createStoriesView(viewModel) {
         action="/"
         method="get"
         role="search"
-        onSubmit={(e) => {
-          e.preventDefault();
-        }}
+        onSubmit={viewModel.handleSearchSubmit}
       >
         <div class="story-search__field">
           <input
@@ -154,6 +152,8 @@ export default function createStoriesView(viewModel) {
             placeholder="Search stories..."
             autocomplete="off"
             value={query}
+            // Opsional: Bisa pakai onInput/onKeyup jika ingin live search instan saat diketik
+            onInput={(e) => viewModel.searchStories(e.target.value)}
           />
 
           <button

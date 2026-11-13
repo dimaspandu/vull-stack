@@ -3,9 +3,12 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
+	"path"
+	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -16,6 +19,8 @@ import (
 	web_stories "github.com/dimaspandu/vull-stack/services/stories/web"
 )
 
+var assetsDir = http.Dir("client/assets")
+
 func getenv(key, def string) string {
 	if v := os.Getenv(key); v != "" {
 		return v
@@ -23,47 +28,44 @@ func getenv(key, def string) string {
 	return def
 }
 
+func serveAssets(w http.ResponseWriter, r *http.Request) {
+	rel := strings.TrimPrefix(path.Clean(r.URL.Path), "/assets/")
+
+	if strings.HasSuffix(rel, ".jsx") {
+		f, err := assetsDir.Open(rel)
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+		defer f.Close()
+
+		src, err := io.ReadAll(f)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		out, err := jsxtranspiler.Compile(string(src), "elementBuilder")
+		if err != nil {
+			http.Error(w, "jsx transpile error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
+		w.Header().Set("Cache-Control", "no-cache")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(out))
+		return
+	}
+
+	http.StripPrefix("/assets/", http.FileServer(assetsDir)).ServeHTTP(w, r)
+}
+
 func main() {
 	_ = godotenv.Load(".env")
 	mux := http.NewServeMux()
 
-	fs := http.FileServer(http.Dir("client/assets/"))
-
-	mux.HandleFunc("GET /assets/js/domain/stories/view.jsx", func(w http.ResponseWriter, r *http.Request) {
-		src, err := os.ReadFile("client/assets/js/domain/stories/view.jsx")
-		if err != nil {
-			http.NotFound(w, r)
-			return
-		}
-		out, err := jsxtranspiler.Compile(string(src), "elementBuilder")
-		if err != nil {
-			http.Error(w, "jsx transpile error: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
-		w.Header().Set("Cache-Control", "no-cache")
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(out))
-	})
-
-	mux.HandleFunc("GET /assets/js/domain/story/view.jsx", func(w http.ResponseWriter, r *http.Request) {
-		src, err := os.ReadFile("client/assets/js/domain/story/view.jsx")
-		if err != nil {
-			http.NotFound(w, r)
-			return
-		}
-		out, err := jsxtranspiler.Compile(string(src), "elementBuilder")
-		if err != nil {
-			http.Error(w, "jsx transpile error: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
-		w.Header().Set("Cache-Control", "no-cache")
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(out))
-	})
-
-	mux.Handle("/assets/", http.StripPrefix("/assets/", fs))
+	mux.Handle("/assets/", http.HandlerFunc(serveAssets))
 
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:%s)/%s?parseTime=true",

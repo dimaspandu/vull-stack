@@ -8,6 +8,12 @@ node_modules/
 !.yarn/plugins
 !.yarn/versions
 
+# Go
+/main.exe
+*.exe
+!.gitkeep
+.tmp/
+
 # Build output
 dist/
 **/dist/

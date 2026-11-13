@@ -40,6 +40,32 @@ func (t *transpiler) skipWhitespace() {
 	}
 }
 
+func (t *transpiler) skipTrivia() {
+	for {
+		t.skipWhitespace()
+		if t.i >= len(t.src) {
+			return
+		}
+		if t.src[t.i] == '/' && t.i+1 < len(t.src) && t.src[t.i+1] == '/' {
+			for t.i < len(t.src) && t.src[t.i] != '\n' {
+				t.i++
+			}
+			continue
+		}
+		if t.src[t.i] == '/' && t.i+1 < len(t.src) && t.src[t.i+1] == '*' {
+			t.i += 2
+			for t.i+1 < len(t.src) && !(t.src[t.i] == '*' && t.src[t.i+1] == '/') {
+				t.i++
+			}
+			if t.i+1 < len(t.src) {
+				t.i += 2
+			}
+			continue
+		}
+		return
+	}
+}
+
 func (t *transpiler) readIdentifier() (string, error) {
 	start := t.i
 	for t.i < len(t.src) {
@@ -164,7 +190,7 @@ type attr struct {
 func (t *transpiler) readAttributes() ([]attr, bool, error) {
 	attrs := []attr{}
 	for t.i < len(t.src) {
-		t.skipWhitespace()
+		t.skipTrivia()
 		if t.i+1 < len(t.src) && t.src[t.i] == '/' && t.src[t.i+1] == '>' {
 			t.i += 2
 			return attrs, true, nil

@@ -90,8 +90,19 @@ function EmptyState() {
   );
 }
 
-function StoryList({ stories }) {
-  return componentBuilder(() => (
+export default function createStoriesView(viewModel) {
+  const storySearchInputView = componentBuilder(() => (
+    <input
+      class="story-search__input"
+      name="q"
+      type="search"
+      placeholder="Search stories..."
+      autocomplete="off"
+      value={viewModel.query}
+    />
+  ));
+
+  const storyListView = componentBuilder(() => (
     <section
       class="story-list"
       aria-labelledby="story-list-title"
@@ -105,24 +116,19 @@ function StoryList({ stories }) {
         </h2>
 
         <p class="story-list__count">
-          {stories.length} stories
+          {viewModel.stories.length}{` `}stories
         </p>
       </header>
 
-      {stories.length > 0 ? (
+      {viewModel.stories.length > 0 ? (
         <ul class="story-list__items" id="story-list-items">
-          {stories.map(story => <StoryListItem { ...story } />)}
+          {viewModel.stories.map(story => <StoryListItem { ...story } />)}
         </ul>
       ) : <EmptyState />}
 
     </section>
   ));
-}
-
-export default function createStoriesView(viewModel) {
-  const { stories, query } = viewModel;
   
-  const storyListView = <StoryList stories={stories} />
   const mainView = (
     <div class="story-page__container">
 
@@ -142,19 +148,10 @@ export default function createStoriesView(viewModel) {
         action="/"
         method="get"
         role="search"
-        onSubmit={viewModel.handleSearchSubmit}
+        onSubmit={(e) => viewModel.handleSearchSubmit(e)}
       >
         <div class="story-search__field">
-          <input
-            class="story-search__input"
-            name="q"
-            type="search"
-            placeholder="Search stories..."
-            autocomplete="off"
-            value={query}
-            // Opsional: Bisa pakai onInput/onKeyup jika ingin live search instan saat diketik
-            onInput={(e) => viewModel.searchStories(e.target.value)}
-          />
+          {storySearchInputView.render()}
 
           <button
             class="story-search__button"
@@ -170,6 +167,7 @@ export default function createStoriesView(viewModel) {
     </div>
   );
 
+  viewModel.addListener(() => storySearchInputView.rerender());
   viewModel.addListener(() => storyListView.rerender());
 
   return mainView;

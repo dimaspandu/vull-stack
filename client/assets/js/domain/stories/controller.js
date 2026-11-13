@@ -12,7 +12,11 @@ export default async function listController(ctx, outlet) {
   const view = createStoriesView(viewModel);
 
   if (ctx.firstArrive && ctx.isInitialRoute){
-    elementBuilder(outlet).setChildren(view);
+    elementBuilder(
+      outlet,
+      { class: "story-page" },
+      view
+    );
   } else {
     elementBuilder(outlet)
       .reset()

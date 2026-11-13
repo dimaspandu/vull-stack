@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"strings"
 )
 
 type Repository struct {
@@ -16,19 +17,48 @@ func NewRepository(db *sql.DB) *Repository {
 	}
 }
 
-func (r *Repository) List(ctx context.Context) ([]Story, error) {
-	rows, err := r.DB.QueryContext(ctx, `
-		SELECT
-			id,
-			slug,
-			title,
-			category,
-			excerpt,
-			published_at,
-			reading_time
-		FROM stories
-		ORDER BY id DESC
-	`)
+func (r *Repository) List(ctx context.Context, q string) ([]Story, error) {
+	q = strings.TrimSpace(q)
+
+	var (
+		rows *sql.Rows
+		err  error
+	)
+
+	if q == "" {
+		rows, err = r.DB.QueryContext(ctx, `
+			SELECT
+				id,
+				slug,
+				title,
+				category,
+				excerpt,
+				published_at,
+				reading_time
+			FROM stories
+			ORDER BY id DESC
+		`)
+	} else {
+		pattern := "%" + q + "%"
+		rows, err = r.DB.QueryContext(ctx, `
+			SELECT
+				id,
+				slug,
+				title,
+				category,
+				excerpt,
+				published_at,
+				reading_time
+			FROM stories
+			WHERE
+				slug LIKE ? OR
+				title LIKE ? OR
+				category LIKE ? OR
+				excerpt LIKE ?
+			ORDER BY id DESC
+		`, pattern, pattern, pattern, pattern)
+	}
+
 	if err != nil {
 		return nil, err
 	}

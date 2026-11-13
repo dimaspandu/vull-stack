@@ -1,25 +1,34 @@
-export default async function createStoriesViewModel(ctx, repository) {
+export default function createStoriesViewModel(repository) {
   const listeners = new Set();
-  const stories = await repository.getStories(ctx);
 
-  return {
-    stories,
-
+  const viewModel = {
+    stories: [],
+    loading: false,
+    error: null,
     query: "",
 
-    fetchStories() {},
+    async _load(ctx) {
+      this.loading = true;
+      this.error = null;
+      this.notifyListener();
 
-    search(query) {
-      this.query = query;
-      // this.stories.filter(story => {
-      //   if (
-      //     story.slug === query ||
-      //     story.title === query ||
-      //     story.excerpt === query
-      //   ) {
-      //     return story;
-      //   }
-      // });
+      try {
+        // Ambil query dari ctx router (misal ctx.query.q)
+        if (ctx?.query?.q) {
+          this.query = ctx.query.q;
+        } else {
+          this.query = "";
+        }
+
+        // Repository akan otomatis mendeteksi apakah ini firstArrive (SSR/DOM) atau fetch API biasa
+        this.stories = await repository.getStories(ctx);
+      } catch (err) {
+        this.error = err.message || "Failed to load stories";
+        this.stories = [];
+      } finally {
+        this.loading = false;
+        this.notifyListener();
+      }
     },
 
     addListener(listener) {
@@ -28,7 +37,9 @@ export default async function createStoriesViewModel(ctx, repository) {
     },
 
     notifyListener() {
-      listeners.forEach((listener) => listener(this));
+      listeners.forEach((listener) => listener(viewModel));
     },
   };
+
+  return viewModel;
 }

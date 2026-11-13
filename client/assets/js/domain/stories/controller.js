@@ -4,20 +4,19 @@ import createStoriesViewModel from "./viewModel.js";
 
 export default async function listController(ctx, outlet) {
   const repository = createStoriesRepository();
-  const viewModel = await createStoriesViewModel(ctx, repository);
-  const {
-    mainView,
-    storyListView,
-  } = createStoriesView(viewModel);
+  const viewModel = createStoriesViewModel(repository);
 
-  viewModel.addListener(() => storyListView.rerender());
+  // Setiap kali route diakses / berubah, _load langsung dipanggil dengan ctx dari router
+  await viewModel._load(ctx);
+
+  const view = createStoriesView(viewModel);
 
   if (ctx.firstArrive && ctx.isInitialRoute){
-    elementBuilder(outlet).setChildren(mainView);
+    elementBuilder(outlet).setChildren(view);
   } else {
     elementBuilder(outlet)
       .reset()
       .setAttributes({ class: "story-page" })
-      .setChildren(mainView);
+      .setChildren(view);
   }
 }

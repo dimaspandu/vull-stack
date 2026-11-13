@@ -10,7 +10,8 @@ export default function createStoriesRepository() {
         return [];
       }
 
-      const response = await fetch("/api/stories");
+      const remoteUrl = ctx.query?.q ? `/api/stories?q=${ctx.query?.q}` : "/api/stories";
+      const response = await fetch(remoteUrl);
       if (response.ok) {
         const result = await response.json();
         const stories = result.data;

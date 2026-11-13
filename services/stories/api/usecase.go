@@ -12,8 +12,8 @@ func NewUsecase(repo *Repository) *Usecase {
 	}
 }
 
-func (u *Usecase) ListStories(ctx context.Context) (*StoryListResponse, error) {
-	stories, err := u.Repo.List(ctx)
+func (u *Usecase) ListStories(ctx context.Context, q string) (*StoryListResponse, error) {
+	stories, err := u.Repo.List(ctx, q)
 	if err != nil {
 		return nil, err
 	}

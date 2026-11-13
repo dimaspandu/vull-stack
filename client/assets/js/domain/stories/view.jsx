@@ -170,8 +170,7 @@ export default function createStoriesView(viewModel) {
     </div>
   );
 
-  return {
-    mainView,
-    storyListView,
-  };
+  viewModel.addListener(() => storyListView.rerender());
+
+  return mainView;
 }

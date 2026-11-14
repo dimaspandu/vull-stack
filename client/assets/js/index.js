@@ -1,4 +1,4 @@
-import "./libs/historypp/src/1.0.6/index.js";
+import "./libs/historypp/src/1.0.7/index.js";
 import "./libs/dompp/src/index.js";
 
 import listHandler from "./domain/stories/handler.js";

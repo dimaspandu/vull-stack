@@ -39,14 +39,14 @@ function StoryDetail({
           </h1>
 
           <div class="story__meta">
-            <time datetime="2026-10-06">
+            <time datetime={publishedAt}>
               {publishedAt}
             </time>
 
             <span aria-hidden="true">·</span>
 
             <span>
-              {readingTime} min read
+              {readingTime}{` `}min read
             </span>
           </div>
 
@@ -65,11 +65,11 @@ function StoryDetail({
 }
 
 function ErrorState() {
-  return elementBuilder("h1", null, "Internal Server Error.");
+  return <h1>Internal Server Error.</h1>;
 }
 
 function EmptyState() {
-  return elementBuilder("h1", null, "Story not found.");
+  return <h1>Story not found."</h1>;
 }
 
 export default function createStoryView(viewModel) {

@@ -41,9 +41,7 @@ export default function createStoriesViewModel(repository) {
       event.preventDefault();
       const formData = new FormData(event.target);
       const query = formData.get("q")?.trim() || "";
-      
-      // Cukup panggil method searchStories yang sudah ada!
-      this.searchStories(query);
+      history.navigatePush(`/?q=${query}`);
     },
 
     filterStories(keyword) {

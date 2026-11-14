@@ -99,6 +99,7 @@ export default function createStoriesView(viewModel) {
       placeholder="Search stories..."
       autocomplete="off"
       value={viewModel.query}
+      onInput={(e) => viewModel.searchStories(e.target.value)}
     />
   ));
 

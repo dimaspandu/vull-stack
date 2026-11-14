@@ -1,5 +1,5 @@
-export default function showHandler(ctx, outlet) {
-  import("./controller.js")
+export default function showHandler(ctx) {
+  return import("./controller.js")
     .then(({ default: showController }) =>
-      showController(ctx, outlet));
+      showController(ctx));
 }

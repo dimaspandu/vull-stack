@@ -1,21 +1,24 @@
 export default function createStoriesRepository() {
   return {
     getStories: async function (ctx) {
-      if (ctx.firstArrive && ctx.isInitialRoute){
-        if (document.getElementById("stories-data")) {
-          return JSON.parse(
-            document.getElementById("stories-data").textContent
-          );
+      // The initial request is server-rendered, so the list is already in the DOM.
+      if (ctx.firstArrive && ctx.isInitialRoute) {
+        const data = document.getElementById("stories-data");
+        if (data) {
+          return JSON.parse(data.textContent);
         }
         return [];
       }
 
-      const remoteUrl = ctx.query?.q ? `/api/stories?q=${ctx.query?.q}` : "/api/stories";
+      const query = ctx.query?.q;
+      const remoteUrl = query
+        ? `/api/stories?q=${encodeURIComponent(query)}`
+        : "/api/stories";
+
       const response = await fetch(remoteUrl);
       if (response.ok) {
         const result = await response.json();
-        const stories = result.data;
-        return stories;
+        return result.data;
       }
 
       return [];

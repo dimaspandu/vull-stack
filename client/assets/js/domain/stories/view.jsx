@@ -33,7 +33,7 @@ function StoryListItem({
             </p>
 
             <div class="story-card__meta">
-              <time datetime="2026-10-06">
+              <time datetime={publishedAt}>
                 {publishedAt}
               </time>
 
@@ -81,7 +81,15 @@ function EmptyState() {
           Try a different keyword.
         </p>
 
-        <a class="story-alert__link" href="/" data-link>
+        <a
+          class="story-alert__link"
+          href="/"
+          data-link
+          onClick={e => {
+            e.preventDefault();
+            history.navigatePush("/");
+          }}
+        >
           Browse all stories
           <span aria-hidden="true">→</span>
         </a>
@@ -91,6 +99,13 @@ function EmptyState() {
 }
 
 export default function createStoriesView(viewModel) {
+  // Each componentBuilder owns one slice of the page. render() is called once
+  // to mount it, and every viewModel notification re-renders only that slice.
+  //
+  // The input is not stateful: `value` only seeds the field on mount so a
+  // `?q=` keyword comes back after a reload, and typing is handled by the DOM
+  // itself. onInput only mirrors the keyword into the viewModel so the list can
+  // filter as the user types, which is why this slice is never re-rendered.
   const storySearchInputView = componentBuilder(() => (
     <input
       class="story-search__input"
@@ -103,6 +118,7 @@ export default function createStoriesView(viewModel) {
     />
   ));
 
+  // The `{` `}` expression keeps the space between the count and the word.
   const storyListView = componentBuilder(() => (
     <section
       class="story-list"
@@ -129,7 +145,7 @@ export default function createStoriesView(viewModel) {
 
     </section>
   ));
-  
+
   const mainView = (
     <div class="story-page__container">
 
@@ -168,7 +184,6 @@ export default function createStoriesView(viewModel) {
     </div>
   );
 
-  viewModel.addListener(() => storySearchInputView.rerender());
   viewModel.addListener(() => storyListView.rerender());
 
   return mainView;

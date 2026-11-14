@@ -69,7 +69,7 @@ function ErrorState() {
 }
 
 function EmptyState() {
-  return <h1>Story not found."</h1>;
+  return <h1>Story not found.</h1>;
 }
 
 export default function createStoryView(viewModel) {

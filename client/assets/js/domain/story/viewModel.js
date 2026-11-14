@@ -3,13 +3,12 @@ export default function createStoryViewModel(repository) {
 
   const viewModel = {
     story: null,
-    loading: false,
     error: null,
 
+    // Called by the controller on every route change. The underscore marks it
+    // as internal: the view only subscribes through addListener().
     async _load(ctx) {
-      this.loading = true;
       this.error = null;
-      this.notifyListener();
 
       try {
         this.story = await repository.getStory(ctx);
@@ -17,7 +16,6 @@ export default function createStoryViewModel(repository) {
         this.error = err.message;
         this.story = null;
       } finally {
-        this.loading = false;
         this.notifyListener();
       }
     },

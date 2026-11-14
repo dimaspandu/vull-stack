@@ -9,12 +9,12 @@ export function bindLinkNavigation() {
   document.addEventListener("click", (e) => {
     const a = e.target.closest("[data-link]");
     if (!a) return;
-  
+
     const url = new URL(a.href);
     if (url.origin !== location.origin) return;
-  
+
     e.preventDefault();
-  
+
     const path = normalizePath(url.pathname);
     history.navigatePush(path);
   });

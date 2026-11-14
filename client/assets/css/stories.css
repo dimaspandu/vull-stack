@@ -483,6 +483,71 @@ input {
 }
 
 /* =========================================================
+   GLOBAL LOADING INDICATOR
+   ========================================================= */
+
+.app-loading {
+  position: fixed;
+  right: 2rem;
+  bottom: 2rem;
+  z-index: 50;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 10px 16px 10px 13px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+
+  background: var(--color-surface);
+  box-shadow:
+    0 12px 32px rgba(41, 38, 33, 0.14);
+
+  color: var(--color-text-muted);
+
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+
+  animation:
+    app-loading-in 180ms ease-out;
+}
+
+/* `display` above would otherwise beat the UA style for [hidden]. */
+.app-loading[hidden] {
+  display: none;
+}
+
+.app-loading__spinner {
+  width: 15px;
+  height: 15px;
+
+  border: 2px solid rgba(109, 90, 72, 0.22);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+
+  animation:
+    app-loading-spin 700ms linear infinite;
+}
+
+@keyframes app-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes app-loading-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* =========================================================
    RESPONSIVE
    ========================================================= */
 
@@ -558,6 +623,11 @@ input {
   .story-alert__title {
     font-size: 18px;
   }
+
+  .app-loading {
+    right: 1rem;
+    bottom: 1rem;
+  }
 }
 
 /* =========================================================
@@ -569,5 +639,10 @@ input {
   *::before,
   *::after {
     transition-duration: 0.01ms !important;
+  }
+
+  .app-loading,
+  .app-loading__spinner {
+    animation: none;
   }
 }

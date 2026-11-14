@@ -3,37 +3,36 @@ import createStoryView from "./view.jsx";
 import createStoryViewModel from "./viewModel.js";
 
 const _CACHE = {
-  repository: null,
   viewModel: null,
-  view: null,
 };
 
-export default async function showController(ctx, outlet) {
-  if (
-    ctx.isSameRoute ||
-    ctx.isSameURL ||
-    ctx.isSelfNavigate
-  ) {
+export default async function showController(ctx) {
+  // Back/forward or a self navigation to the same route: reuse the cached
+  // viewModel so its listeners keep the already mounted view in sync.
+  if (ctx.isSameRoute || ctx.isSameURL || ctx.isSelfNavigate) {
     await _CACHE.viewModel._load(ctx);
+    return;
+  }
+
+  const outlet = document.getElementById("outlet");
+
+  const repository = createStoryRepository();
+  const viewModel = createStoryViewModel(repository);
+  _CACHE.viewModel = viewModel;
+
+  // Every route change reloads the state through the router context.
+  await viewModel._load(ctx);
+
+  const view = createStoryView(viewModel);
+
+  if (ctx.firstArrive && ctx.isInitialRoute) {
+    // The server already rendered this markup, so only mount the view.
+    elementBuilder(outlet).setChildren(view);
   } else {
-    const repository = createStoryRepository();
-    _CACHE.repository = repository;
-    const viewModel = createStoryViewModel(repository);
-    _CACHE.viewModel = viewModel;
-
-    // Setiap kali route diakses / berubah, _load langsung dipanggil dengan ctx dari router
-    await viewModel._load(ctx);
-
-    const view = createStoryView(viewModel);
-    _CACHE.view = view;
-
-    if (ctx.firstArrive && ctx.isInitialRoute){
-      elementBuilder(outlet).setChildren(view);
-    } else {
-      elementBuilder(outlet)
-        .reset()
-        .setAttributes({ class: "story-detail-page" })
-        .setChildren(view);
-    }
+    // Client-side navigation: drop the previous DOM before mounting the new view.
+    elementBuilder(outlet)
+      .reset()
+      .setAttributes({ class: "story-detail-page" })
+      .setChildren(view);
   }
 }

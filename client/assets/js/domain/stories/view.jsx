@@ -1,4 +1,6 @@
-/** @jsx elementBuilder */
+/** @jsxRuntime classic */
+/** @jsx document.createElement */
+/** @jsxFrag document.createDocumentFragment */
 function StoryListItem({
   slug,
   category,

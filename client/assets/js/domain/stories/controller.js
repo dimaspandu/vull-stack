@@ -27,14 +27,14 @@ export default async function listController(ctx) {
 
   if (ctx.firstArrive && ctx.isInitialRoute) {
     // The server already rendered this markup, so only mount the view.
-    elementBuilder(
+    document.createElement(
       outlet,
       { class: "story-page" },
       view
     );
   } else {
     // Client-side navigation: drop the previous DOM before mounting the new view.
-    elementBuilder(outlet)
+    document.createElement(outlet)
       .reset()
       .setAttributes({ class: "story-page" })
       .setChildren(view);

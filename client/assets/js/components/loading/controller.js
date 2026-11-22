@@ -19,7 +19,7 @@ function mount() {
 
   mounted = true;
 
-  elementBuilder(portal).setChildren(createLoadingView(viewModel));
+  document.createElement(portal).setChildren(createLoadingView(viewModel));
 }
 
 export function showLoading() {

@@ -1,4 +1,3 @@
-/** @jsx elementBuilder */
 export default function createNotFoundView() {
   return (
     <div class="story-alert" role="alert">

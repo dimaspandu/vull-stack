@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx document.createElement */
-/** @jsxFrag document.createDocumentFragment */
 function StoryDetail({
   category,
   title,
@@ -75,7 +72,7 @@ function EmptyState() {
 }
 
 export default function createStoryView(viewModel) {
-  const storyView = componentBuilder(() => {
+  const storyView = document.createComponent(() => {
     if (viewModel.error) {
       return ErrorState();
     }
@@ -84,26 +81,18 @@ export default function createStoryView(viewModel) {
       return EmptyState();
     }
 
-    const {
-      category,
-      title,
-      content,
-      publishedAt,
-      readingTime
-    } = viewModel.story;
-
     return (
       <StoryDetail
-        category={category}
-        title={title}
-        content={content}
-        publishedAt={publishedAt}
-        readingTime={readingTime}
+        category={viewModel.story.category}
+        title={viewModel.story.title}
+        content={viewModel.story.content}
+        publishedAt={viewModel.story.publishedAt}
+        readingTime={viewModel.story.readingTime}
       />
     );
   });
 
   viewModel.addListener(() => storyView.rerender());
 
-  return storyView.render();
+  return storyView;
 }

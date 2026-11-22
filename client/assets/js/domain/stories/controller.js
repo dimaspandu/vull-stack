@@ -35,7 +35,6 @@ export default async function listController(ctx) {
   } else {
     // Client-side navigation: drop the previous DOM before mounting the new view.
     document.createElement(outlet)
-      .reset()
       .setAttributes({ class: "story-page" })
       .setChildren(view);
   }

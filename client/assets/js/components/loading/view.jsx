@@ -1,6 +1,5 @@
-/** @jsx elementBuilder */
 export default function createLoadingView(viewModel) {
-  const loadingView = componentBuilder(() => (
+  const loadingView = document.createComponent(() => (
     <div
       class="app-loading"
       role="status"
@@ -17,5 +16,5 @@ export default function createLoadingView(viewModel) {
 
   viewModel.addListener(() => loadingView.rerender());
 
-  return loadingView.render();
+  return loadingView;
 }

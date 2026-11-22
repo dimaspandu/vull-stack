@@ -22,10 +22,17 @@ const (
 // the source, including the whitespace around them so they can be stripped.
 var pragmaRe = regexp.MustCompile(`(?:\r?\n)?[ \t]*/\*\*?\s*@(jsx|jsxRuntime|jsxFrag)\s+([^\*]*?)\*/[ \t]*`)
 
-// Compile transpiles the JSX in source. factory is the element factory name;
-// when it is empty an @jsx pragma is used, then the default factory.
-func Compile(source, factory string) (string, error) {
-	return compile(source, factory)
+// Compile transpiles the JSX in source. The optional factory names the element
+// factory; when it is omitted the @jsx pragma of the source is used, then the
+// default factory. The fragment factory comes from @jsxFrag, then from
+// "<factory>.fragment" for a string factory, then from the default.
+func Compile(source string, factory ...string) (string, error) {
+	name := ""
+	if len(factory) > 0 {
+		name = factory[0]
+	}
+
+	return compile(source, name)
 }
 
 // CompileWithFactory transpiles the JSX in source with explicit element and

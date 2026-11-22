@@ -589,3 +589,28 @@ func TestCompileErrors(t *testing.T) {
 		})
 	}
 }
+
+func TestCompileWithoutFactoryUsesPragma(t *testing.T) {
+	tests := []struct {
+		name   string
+		source string
+		want   string
+	}{
+		{"@jsx pragma", `/** @jsx h */<div />`, `h("div", null)`},
+		{"@jsx and @jsxFrag pragmas", `/** @jsx h */ /** @jsxFrag frag */ <><div /></>`, `frag(h("div", null))`},
+		{"default factory when no pragma", `<div />`, `document.createElement("div", null)`},
+		{"default fragment factory when no pragma", `<><div /></>`, `document.createDocumentFragment(document.createElement("div", null))`},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := Compile(tt.source)
+			if err != nil {
+				t.Fatalf("Compile() error = %v", err)
+			}
+			if got != tt.want {
+				t.Errorf("Compile() mismatch\n--- got ---\n%s\n--- want ---\n%s", got, tt.want)
+			}
+		})
+	}
+}

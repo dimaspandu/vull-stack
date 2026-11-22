@@ -45,7 +45,10 @@ func serveAssets(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		out, err := jsxtranspiler.Compile(string(src), "document.createElement")
+		out, err := jsxtranspiler.CompileWithFactory(string(src), jsxtranspiler.Factory{
+			JSX:     "document.createElement",
+			JSXFrag: "document.createDocumentFragment",
+		})
 		if err != nil {
 			http.Error(w, "jsx transpile error: "+err.Error(), http.StatusInternalServerError)
 			return

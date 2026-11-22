@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx document.createElement */
-/** @jsxFrag document.createDocumentFragment */
 function StoryListItem({
   slug,
   category,
@@ -101,14 +98,14 @@ function EmptyState() {
 }
 
 export default function createStoriesView(viewModel) {
-  // Each componentBuilder owns one slice of the page. render() is called once
+  // Each document.createComponent owns one slice of the page. render() is called once
   // to mount it, and every viewModel notification re-renders only that slice.
   //
   // The input is not stateful: `value` only seeds the field on mount so a
   // `?q=` keyword comes back after a reload, and typing is handled by the DOM
   // itself. onInput only mirrors the keyword into the viewModel so the list can
   // filter as the user types, which is why this slice is never re-rendered.
-  const storySearchInputView = componentBuilder(() => (
+  const storySearchInputView = document.createComponent(() => (
     <input
       class="story-search__input"
       name="q"
@@ -121,7 +118,7 @@ export default function createStoriesView(viewModel) {
   ));
 
   // The `{` `}` expression keeps the space between the count and the word.
-  const storyListView = componentBuilder(() => (
+  const storyListView = document.createComponent(() => (
     <section
       class="story-list"
       aria-labelledby="story-list-title"
@@ -170,7 +167,7 @@ export default function createStoriesView(viewModel) {
         onSubmit={(e) => viewModel.handleSearchSubmit(e)}
       >
         <div class="story-search__field">
-          {storySearchInputView.render()}
+          {storySearchInputView}
 
           <button
             class="story-search__button"
@@ -181,7 +178,7 @@ export default function createStoriesView(viewModel) {
         </div>
       </form>
 
-      {storyListView.render()}
+      {storyListView}
 
     </div>
   );

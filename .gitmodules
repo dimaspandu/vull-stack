@@ -1,11 +1,3 @@
-[submodule "libs/hashttp"]
-	path = libs/hashttp
-	url = https://github.com/dimaspandu/hashttp.git
-	recurse = true
-[submodule "libs/ngapack"]
-	path = libs/ngapack
-	url = https://github.com/dimaspandu/ngapack.git
-	recurse = true
 [submodule "client/assets/js/libs/historypp"]
 	path = client/assets/js/libs/historypp
 	url = https://github.com/dimaspandu/historypp.git

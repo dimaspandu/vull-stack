@@ -2,7 +2,9 @@ package api_stories
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"time"
 )
@@ -48,6 +50,12 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.Usecase.GetStory(ctx, slug)
 	if err != nil {
+		// An unknown slug is a missing resource, not a server failure.
+		if errors.Is(err, sql.ErrNoRows) {
+			http.Error(w, "Story not found.", http.StatusNotFound)
+			return
+		}
+
 		http.Error(
 			w,
 			"Failed to load story.",

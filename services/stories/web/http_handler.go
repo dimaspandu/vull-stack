@@ -1,7 +1,10 @@
 package web_stories
 
 import (
+	"bytes"
 	"context"
+	"database/sql"
+	"errors"
 	"html/template"
 	"net/http"
 	"time"
@@ -59,12 +62,16 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
 	defer cancel()
 
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
 	slug := r.PathValue("slug")
 
 	story, err := h.Usecase.GetStoryBySlug(ctx, slug)
 	if err != nil {
+		// An unknown slug is a missing page, not a server failure.
+		if errors.Is(err, sql.ErrNoRows) {
+			h.NotFound(w, r)
+			return
+		}
+
 		http.Error(
 			w,
 			"Failed to load story.",
@@ -72,6 +79,8 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 		)
 		return
 	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	tmpl, err := template.ParseFiles("client/[id].html")
 	if err != nil {
@@ -91,4 +100,34 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 		)
 		return
 	}
+}
+
+// NotFound renders the static 404 page. It is also the fallback route, so any
+// unmatched path or method ends up here.
+func (h *Handler) NotFound(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles("client/404.html")
+	if err != nil {
+		http.Error(
+			w,
+			"Failed to load template.",
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	// Render into a buffer first: the status code must not be sent before the
+	// page is known to be complete.
+	var page bytes.Buffer
+	if err := tmpl.Execute(&page, nil); err != nil {
+		http.Error(
+			w,
+			"Failed to render template.",
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusNotFound)
+	_, _ = w.Write(page.Bytes())
 }

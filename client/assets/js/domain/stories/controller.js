@@ -2,11 +2,20 @@ import createStoriesRepository from "./repository.js";
 import createStoriesView from "./view.jsx";
 import createStoriesViewModel from "./viewModel.js";
 
+import { setPageMeta } from "../../utils/meta.js";
+
 const _CACHE = {
   viewModel: null,
 };
 
 export default async function listController(ctx) {
+  // The list has one title and one description, so they are the same on every
+  // load and can be set before the cached and fresh paths split.
+  setPageMeta(
+    "Short Stories",
+    "A collection of short stories to read in a few quiet minutes."
+  );
+
   // Back/forward or a self navigation to the same route: reuse the cached
   // viewModel so its listeners keep the already mounted view in sync.
   if (ctx.isSameRoute || ctx.isSameURL || ctx.isSelfNavigate) {

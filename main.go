@@ -110,6 +110,8 @@ func main() {
 	mux.HandleFunc("GET /api/stories", apiH.List)
 	mux.HandleFunc("GET /api/stories/{slug}", apiH.Show)
 
+	mux.HandleFunc("/", webH.NotFound)
+
 	port := getenv("APP_PORT", "6060")
 	srv := &http.Server{
 		Addr:         ":" + port,

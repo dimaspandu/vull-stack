@@ -1,7 +1,7 @@
 /**
  * elementBuilder.js — Custom JSX factory.
  *
- * Demonstrates that ngapack can use any factory name, not just "d".
+ * Shows that any factory name works, not just a fixed one.
  *
  * The transpiler calls the factory in two ways:
  *   elementBuilder(tag, props, ...children)
@@ -11,10 +11,10 @@
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 /**
- * Tag yang hanya valid di namespace SVG, jadi aman dibuat via createElementNS.
- * Tag yang ambigu (a, script, style, title, desc, metadata) sengaja TIDAK
- * ada di sini karena bisa dipakai di HTML dan akan rusak bila dipaksa
- * menjadi elemen SVG.
+ * Tags that are only valid inside the SVG namespace, so they are safe to create
+ * with createElementNS. Ambiguous tags (a, script, style, title, desc,
+ * metadata) are deliberately left out: they are valid in HTML too and would
+ * break if forced into the SVG namespace.
  */
 const svgOnlyTags = new Set([
   "svg",
@@ -71,7 +71,7 @@ export default function elementBuilder(tag, props, ...children) {
 }
 
 /**
- * Dipanggil oleh transpiler untuk `<>...</>` -> `factory.fragment(...)`.
+ * Called by the transpiler for `<>...</>` -> `factory.fragment(...)`.
  */
 elementBuilder.fragment = function fragment(...children) {
   const node = document.createDocumentFragment();

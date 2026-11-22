@@ -4,24 +4,27 @@ A small Go application that renders pages on the server and then takes over as a
 single page application in the browser: server-side rendering for the first
 paint, client-side routing for every navigation after it.
 
-No bundler, no transpiler step, no `node_modules`. The Go binary is the only
-build artifact; `.jsx` files are compiled on demand while the assets are served.
+No bundler, no build step, no `node_modules`. The Go binary is the only build
+artifact; `.jsx` files are compiled on demand while the assets are served.
 
 ## Features
 
-- **SSR first.** `/` and `/{slug}` are rendered with `html/template` from MySQL,
-  so the first paint is complete HTML.
+- **SSR first.** `/`, `/{slug}` and the 404 page are rendered with
+  `html/template` from MySQL, so the first paint is complete HTML.
 - **SPA after hydration.** The same HTML is reused as the initial state; later
   navigations are handled in the browser by `historypp` and never hit the
   document.
 - **JSX without a build step.** `internal/jsxtranspiler` compiles `.jsx` on the
   fly when the asset is requested and serves it as plain JavaScript.
 - **MVVM per domain.** Each route owns a `handler → controller → repository →
-  viewModel → view` chain, with the view split into `componentBuilder` slices.
+  viewModel → view` chain, with the view split into `document.createComponent`
+  slices.
 - **Route transition indicator.** A reference-counted loading indicator is
   mounted once into `#portal` and driven by the router.
 - **Search.** Server-side filtering through `?q=`, plus live client-side
   filtering over the stories already loaded for the route.
+- **Page metadata.** The document title and the meta description follow the
+  active route, on the server and on the client.
 
 ## Tech stack
 
@@ -43,11 +46,11 @@ from this repository and must not be edited here.
 
 ```
 browser
-  │  GET /                GET /{slug}
+  │  GET /        GET /{slug}        GET /anything/else
   ▼
 main.go ──► services/stories/web   (handler → usecase → repository)  ──► MySQL
   │
-  ├─► html/template: client/index.html, client/[id].html
+  ├─► html/template: client/index.html, client/[id].html, client/404.html
   └─► /assets/*: static files, .jsx compiled by internal/jsxtranspiler
 
 browser (after hydration)
@@ -67,17 +70,18 @@ same `handler → usecase → repository` shape.
 ```
 main.go                       asset serving, wiring, HTTP server
 internal/jsxtranspiler/       JSX → JS compiler used at request time
-services/stories/web/         HTML use case (list, show)
+services/stories/web/         HTML use case (list, show, not found)
 services/stories/api/         JSON use case (list, show)
 database/schema.sql           table definition
 database/seed.sql             sample rows
 client/index.html             list template (SSR)
 client/[id].html              detail template (SSR)
+client/404.html               fallback template (SSR)
 client/assets/js/index.js     router bootstrap
 client/assets/js/domain/      one folder per route: handler, controller,
                               repository, viewModel, view
 client/assets/js/components/  reusable UI (loading indicator)
-client/assets/js/utils/       shared helpers
+client/assets/js/utils/       shared helpers (meta, paths)
 client/assets/css/            styles
 client/assets/js/libs/        dompp, historypp (submodules)
 ```
@@ -131,12 +135,13 @@ go build -o main.exe .
 | Method | Path | Type | Description |
 | --- | --- | --- | --- |
 | `GET` | `/` | HTML | Story list, optional `?q=` filter |
-| `GET` | `/{slug}` | HTML | Story detail |
+| `GET` | `/{slug}` | HTML | Story detail, 404 page for an unknown slug |
 | `GET` | `/api/stories` | JSON | Story list, optional `?q=` filter |
-| `GET` | `/api/stories/{slug}` | JSON | Story detail |
+| `GET` | `/api/stories/{slug}` | JSON | Story detail, 404 for an unknown slug |
 | `GET` | `/assets/...` | static | CSS, images, plain JS |
 | `GET` | `/assets/**/*.jsx` | JS | `.jsx` compiled on the fly |
 | `GET` | `/favicon.ico` | 404 | Not served |
+| any | anything else | HTML | 404 page |
 
 API responses are wrapped: `{"data": ...}`.
 
@@ -150,15 +155,21 @@ rendered this page.
 **SSR handoff.** The server embeds the data it used for the render in a
 `<script type="application/json">` block (`#stories-data` on the list,
 `#story-data` on the detail). On the initial route the repository reads that
-block instead of calling the API, so the first paint costs no extra request.
+block instead of calling the API, so the first paint costs no extra request. The
+404 page carries no data and always goes through the API-free path.
 
 **Mounting.** `#outlet` is the view container and is replaced on client-side
 navigation. `#portal` lives outside it, so the loading indicator survives a route
 change.
 
 **View state.** `viewModel` is the only mutable state; `view.jsx` subscribes
-through `addListener` and each `componentBuilder` slice re-renders on its own
-notification.
+through `addListener` and each `document.createComponent` slice re-renders on its
+own notification.
+
+**Metadata.** `utils/meta.js` exposes `setPageMeta(title, description)`. Each
+controller calls it so a client-side navigation cannot leave the previous page's
+title or description behind; the story controller derives both from
+`viewModel.story`.
 
 **Loading.** `components/loading` owns a singleton viewModel rendered into
 `#portal`. `withLoading(handler)` wraps every route handler, shows the indicator
@@ -168,9 +179,28 @@ The initial server-rendered route is skipped, because there is no transition to
 indicate.
 
 **JSX pipeline.** A request for `/assets/**/*.jsx` is read from disk, compiled by
-`internal/jsxtranspiler` with `elementBuilder` as the factory, and returned as
-`application/javascript` with `Cache-Control: no-cache`. Everything else under
-`/assets/` is served as a static file.
+`internal/jsxtranspiler` and returned as `application/javascript` with
+`Cache-Control: no-cache`. Everything else under `/assets/` is served as a
+static file.
+
+The factory comes from `main.go`:
+
+```go
+jsxtranspiler.CompileWithFactory(src, jsxtranspiler.Factory{
+	JSX:     "document.createElement",
+	JSXFrag: "document.createDocumentFragment",
+})
+```
+
+`Compile(src)` works too, and then the factory is taken from a pragma in the
+source, falling back to `document.createElement` /
+`document.createDocumentFragment`. Supported pragmas:
+
+| Pragma | Effect |
+| --- | --- |
+| `@jsx <factory>` | Element factory, dotted paths allowed |
+| `@jsxFrag <factory>` | Fragment factory |
+| `@jsxRuntime <mode>` | Parsed and stripped, no behaviour change |
 
 ## Tests
 
@@ -179,7 +209,8 @@ go test ./...
 ```
 
 The transpiler is the only unit-tested package today
-(`internal/jsxtranspiler`), including JSX comments inside opening tags.
+(`internal/jsxtranspiler`): factories, pragmas, comments inside opening tags and
+comments at the top level.
 
 ## Notes
 
@@ -187,4 +218,9 @@ The transpiler is the only unit-tested package today
   `.jsx` file and intentionally sends `Cache-Control: no-cache`.
 - `client/assets/js/factories/elementBuilder.js` and the `bindLinkNavigation`
   helper are currently unused; the runtime builder comes from `dompp`.
-- `/api/stories/{slug}` answers 500 for an unknown slug instead of 404.
+- The 404 page is rendered by `services/stories/web` for unknown paths, and an
+  unknown story slug produces the same page with status 404.
+
+## License
+
+[MIT](LICENSE)

@@ -29,6 +29,14 @@ func getenv(key, def string) string {
 }
 
 func serveAssets(w http.ResponseWriter, r *http.Request) {
+	// There is no build step or content hashing, so assets must never be
+	// cached by the browser. no-cache still allows a stored copy + 304
+	// revalidation, which can leave a stale module body in memory; no-store
+	// forces a fresh download on every request.
+	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("Pragma", "no-cache")
+	w.Header().Set("Expires", "0")
+
 	rel := strings.TrimPrefix(path.Clean(r.URL.Path), "/assets/")
 
 	if strings.HasSuffix(rel, ".jsx") {
@@ -55,7 +63,6 @@ func serveAssets(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
-		w.Header().Set("Cache-Control", "no-cache")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(out))
 		return

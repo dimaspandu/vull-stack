@@ -1,3 +1,5 @@
+// Router-agnostic state for a single story. The controller supplies the story
+// data; this only fans out changes to subscribers.
 export default function createStoryViewModel(repository) {
   const listeners = new Set();
 
@@ -5,13 +7,21 @@ export default function createStoryViewModel(repository) {
     story: null,
     error: null,
 
-    // Called by the controller on every route change. The underscore marks it
-    // as internal: the view only subscribes through addListener().
-    async _load(ctx) {
+    // Seed state from an already-resolved story (for example, the
+    // server-rendered markup on the initial request).
+    _hydrate(story) {
+      this.error = null;
+      this.story = story;
+      this.notifyListener();
+    },
+
+    // Reload state through the repository on every route change. The controller
+    // passes a plain slug instead of the router context.
+    async _load(slug) {
       this.error = null;
 
       try {
-        this.story = await repository.getStory(ctx);
+        this.story = await repository.getStory(slug);
       } catch (err) {
         this.error = err.message;
         this.story = null;

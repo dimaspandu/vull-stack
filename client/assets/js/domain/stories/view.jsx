@@ -4,7 +4,8 @@ function StoryListItem({
   title,
   excerpt,
   publishedAt,
-  readingTime
+  readingTime,
+  navigate
 }) {
   return (
     <li class="story-list__item">
@@ -15,7 +16,7 @@ function StoryListItem({
           data-link
           onClick={e => {
             e.preventDefault();
-            history.navigatePush(`/${slug}`);
+            navigate(`/${slug}`);
           }}
         >
           <div class="story-card__content">
@@ -49,7 +50,7 @@ function StoryListItem({
   );
 }
 
-function EmptyState() {
+function EmptyState({ navigate }) {
   return (
     <div class="story-alert" role="status">
       <div class="story-alert__icon" aria-hidden="true">
@@ -86,7 +87,7 @@ function EmptyState() {
           data-link
           onClick={e => {
             e.preventDefault();
-            history.navigatePush("/");
+            navigate("/");
           }}
         >
           Browse all stories
@@ -97,7 +98,7 @@ function EmptyState() {
   );
 }
 
-export default function createStoriesView(viewModel) {
+export default function createStoriesView(viewModel, navigate) {
   // Each document.createComponent owns one slice of the page. render() is called once
   // to mount it, and every viewModel notification re-renders only that slice.
   //
@@ -138,9 +139,9 @@ export default function createStoriesView(viewModel) {
 
       {viewModel.stories.length > 0 ? (
         <ul class="story-list__items" id="story-list-items">
-          {viewModel.stories.map(story => <StoryListItem { ...story } />)}
+          {viewModel.stories.map(story => <StoryListItem { ...story } navigate={navigate} />)}
         </ul>
-      ) : <EmptyState />}
+      ) : <EmptyState navigate={navigate} />}
 
     </section>
   ));

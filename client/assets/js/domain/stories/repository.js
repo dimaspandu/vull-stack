@@ -1,16 +1,19 @@
 export default function createStoriesRepository() {
-  return {
-    getStories: async function (ctx) {
-      // The initial request is server-rendered, so the list is already in the DOM.
-      if (ctx.firstArrive && ctx.isInitialRoute) {
-        const data = document.getElementById("stories-data");
-        if (data) {
-          return JSON.parse(data.textContent);
-        }
-        return [];
-      }
+  // The initial request is server-rendered, so the list is already in the DOM.
+  // The controller reads it once from #stories-data; the repository itself is
+  // route-agnostic and only knows how to fetch the story list.
+  function readInitialStories() {
+    const data = document.getElementById("stories-data");
+    if (!data) {
+      return [];
+    }
+    return JSON.parse(data.textContent);
+  }
 
-      const query = ctx.query?.q;
+  return {
+    // Pure data access: given a keyword (or none), resolve the story list.
+    // No router context leaks in here; the controller normalizes it.
+    getStories: async function (query) {
       const remoteUrl = query
         ? `/api/stories?q=${encodeURIComponent(query)}`
         : "/api/stories";
@@ -22,6 +25,8 @@ export default function createStoriesRepository() {
       }
 
       return [];
-    }
+    },
+
+    readInitialStories,
   };
 }

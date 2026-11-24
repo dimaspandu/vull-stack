@@ -1,4 +1,4 @@
-export default function createNotFoundView() {
+export default function createNotFoundView(navigate) {
   return (
     <div class="story-alert" role="alert">
 
@@ -17,7 +17,7 @@ export default function createNotFoundView() {
           data-link
           onClick={e => {
             e.preventDefault();
-            history.navigatePush("/");
+            navigate("/");
           }}
         >
           ← Back to stories

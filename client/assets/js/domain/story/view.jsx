@@ -3,7 +3,8 @@ function StoryDetail({
   title,
   content,
   publishedAt,
-  readingTime
+  readingTime,
+  back
 }) {
   return (
     <div class="story-detail-page__container">
@@ -18,7 +19,7 @@ function StoryDetail({
           data-link
           onClick={e => {
             e.preventDefault();
-            history.back();
+            back();
           }}
         >
           ← Back to stories
@@ -71,7 +72,7 @@ function EmptyState() {
   return <h1>Story not found.</h1>;
 }
 
-export default function createStoryView(viewModel) {
+export default function createStoryView(viewModel, back) {
   const storyView = document.createComponent(() => {
     if (viewModel.error) {
       return ErrorState();
@@ -88,6 +89,7 @@ export default function createStoryView(viewModel) {
         content={viewModel.story.content}
         publishedAt={viewModel.story.publishedAt}
         readingTime={viewModel.story.readingTime}
+        back={back}
       />
     );
   });

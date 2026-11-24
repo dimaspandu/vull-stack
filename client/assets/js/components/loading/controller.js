@@ -46,6 +46,10 @@ export function withLoading(handler) {
 
     showLoading();
 
+    // Client-side navigation: reset scroll to top so the new route starts
+    // from the top of the page instead of carrying the previous scroll offset.
+    window.scrollTo(0, 0);
+
     try {
       return await handler(ctx);
     } finally {

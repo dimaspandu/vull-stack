@@ -2,6 +2,7 @@ import createStoryRepository from "./repository.js";
 import createStoryView from "./view.jsx";
 import createStoryViewModel from "./viewModel.js";
 
+import { mountOutlet } from "../../utils/mount.js";
 import { setPageMeta } from "../../utils/meta.js";
 
 const _CACHE = {
@@ -28,38 +29,37 @@ function syncPageMeta(viewModel) {
 }
 
 export default async function showController(ctx) {
+  const isServerRendered = ctx.firstArrive && ctx.isInitialRoute;
+
   // Back/forward or a self navigation to the same route: reuse the cached
   // viewModel so its listeners keep the already mounted view in sync.
   if (ctx.isSameRoute || ctx.isSameURL || ctx.isSelfNavigate) {
-    await _CACHE.viewModel._load(ctx);
+    if (isServerRendered) {
+      _CACHE.viewModel._hydrate(
+        _CACHE.viewModel.story
+      );
+    } else {
+      await _CACHE.viewModel._load(ctx.params.slug);
+    }
     syncPageMeta(_CACHE.viewModel);
     return;
   }
-
-  const outlet = document.getElementById("outlet");
 
   const repository = createStoryRepository();
   const viewModel = createStoryViewModel(repository);
   _CACHE.viewModel = viewModel;
 
-  // Every route change reloads the state through the router context.
-  await viewModel._load(ctx);
+  // The initial request is server-rendered, so seed the viewModel from the
+  // markup instead of refetching it. Every later route change reloads.
+  if (isServerRendered) {
+    viewModel._hydrate(repository.readInitialStory());
+  } else {
+    await viewModel._load(ctx.params.slug);
+  }
 
   syncPageMeta(viewModel);
 
-  const view = createStoryView(viewModel);
+  const view = createStoryView(viewModel, history.navigatePop);
 
-  if (ctx.firstArrive && ctx.isInitialRoute) {
-    // The server already rendered this markup, so only mount the view.
-    document.createElement(
-      outlet,
-      { class: "story-detail-page" },
-      view
-    );
-  } else {
-    // Client-side navigation: drop the previous DOM before mounting the new view.
-    document.createElement(outlet)
-      .setAttributes({ class: "story-detail-page" })
-      .setChildren(view);
-  }
+  mountOutlet(view, { hydrate: isServerRendered });
 }

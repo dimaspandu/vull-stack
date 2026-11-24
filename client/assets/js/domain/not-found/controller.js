@@ -1,15 +1,13 @@
 import createNotFoundView from "./view.jsx";
 
+import { mountOutlet } from "../../utils/mount.js";
 import { setPageMeta } from "../../utils/meta.js";
 
-export default function notFoundController(ctx) {
-  const outlet = document.getElementById("outlet");
-  const view = createNotFoundView();
+export default function notFoundController() {
+  const view = createNotFoundView(history.navigatePush);
 
   setPageMeta("404 — Page not found", "404 — Page not found");
 
   // No route matched, so there is no server-rendered markup to hydrate.
-  document.createElement(outlet)
-    .setAttributes({ class: "story-page" })
-    .setChildren(view);
+  mountOutlet(view, { hydrate: false });
 }

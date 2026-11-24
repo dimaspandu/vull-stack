@@ -16,9 +16,12 @@ artifact; `.jsx` files are compiled on demand while the assets are served.
   document.
 - **JSX without a build step.** `internal/jsxtranspiler` compiles `.jsx` on the
   fly when the asset is requested and serves it as plain JavaScript.
-- **MVVM per domain.** Each route owns a `handler → controller → repository →
-  viewModel → view` chain, with the view split into `document.createComponent`
-  slices.
+- **MVVM per domain.** Each route owns a
+  `handler → controller → viewModel → view` chain plus a `repository` for data
+  access. The controller only decides what to render; mounting into `#outlet`
+  (hydrate vs replace) is handled by `utils/mount.js`.
+- **Scroll to top on navigation.** Every client-side route change resets the
+  window scroll to `y = 0`.
 - **Route transition indicator.** A reference-counted loading indicator is
   mounted once into `#portal` and driven by the router.
 - **Search.** Server-side filtering through `?q=`, plus live client-side
@@ -44,26 +47,102 @@ from this repository and must not be edited here.
 
 ## Architecture
 
-```
-browser
-  │  GET /        GET /{slug}        GET /anything/else
-  ▼
-main.go ──► services/stories/web   (handler → usecase → repository)  ──► MySQL
-  │
-  ├─► html/template: client/index.html, client/[id].html, client/404.html
-  └─► /assets/*: static files, .jsx compiled by internal/jsxtranspiler
+```mermaid
+flowchart TB
+    subgraph Browser
+        BR[Browser] --> Srv[main.go :6060]
+        BR --> Srv
+        BR --> Client[client assets js index.js]
+    end
 
-browser (after hydration)
-  index.js ──► historypp router ──► domain/{stories,story,not-found}/handler.js
-                                        │
-                                        └─► controller.js ──► repository.js ──► /api/stories
-                                              │
-                                              └─► viewModel.js ──► view.jsx
+    subgraph Go Server
+        Srv --> W[services stories web]
+        Srv --> A[services stories api]
+        W --> DB[(MySQL)]
+        A --> DB
+        W --> HTML[client index.html, id.html, 404.html]
+        Srv --> JS[assets .jsx → JS]
+    end
+
+    subgraph Client SPA
+        Client --> HP[historypp router]
+        HP --> H[domain handler.js]
+        H --> C[domain controller.js]
+        C --> VM[domain viewModel.js]
+        C --> R[domain repository.js]
+        VM --> V[domain view.jsx]
+        R --> API[api stories]
+        C --> MO[utils mount.js outlet]
+    end
+
+    style Srv fill:#f9f,stroke:#333
+    style DB fill:#bbf,stroke:#333
+    style HTML fill:#bfb,stroke:#333
+    style Client fill:#bfb,stroke:#333
 ```
 
 The web and API layers are separate on purpose: `services/stories/web` returns
 HTML, `services/stories/api` returns JSON, and both share the same table and the
 same `handler → usecase → repository` shape.
+
+### MVVM layer per route (client)
+
+```mermaid
+flowchart LR
+    H[handler.js] -->|"import() lazy"| C[controller.js]
+    C -->|builds| VM[viewModel.js]
+    C -->|mounts via mountOutlet| V[view.jsx]
+    C -->|data| R[repository.js]
+    R -->|fetch| API[api stories slug]
+    VM -->|notifyListener| V
+    V -->|DOM| Outlet[outlet]
+```
+
+Each domain folder (`stories`, `story`, `not-found`) holds its own `handler`,
+`controller`, `repository`, `viewModel`, and `view` so nothing leaks across
+routes.
+
+### Sequence: first load vs client navigation
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant B as Browser
+    participant S as Server (main.go)
+    participant JS as index.js
+    participant HP as historypp
+    participant C as controller
+    participant VM as viewModel
+    participant R as repository
+    participant API as api stories
+    participant Outlet as outlet
+
+    rect rgb(240, 240, 255)
+    note over B, S: FIRST LOAD — server already rendered HTML
+    B->>S: GET / or /{slug}
+    S->>B: HTML + script id stories-data
+    B->>JS: script module loads
+    JS->>HP: navigateReplace(initialPath)
+    HP->>C: handler(ctx), firstArrive && isInitialRoute
+    C->>R: readInitialStories() from DOM
+    R-->>C: server data
+    C->>VM: _hydrate(data)
+    C->>Outlet: mountOutlet(view, {hydrate: true})
+    end
+
+    rect rgb(255, 240, 240)
+    note over B API: CLIENT NAVIGATION — link click or history.push
+    B->>HP: navigatePush(/slug/)
+    HP->>C: handler(ctx), firstArrive == false
+    C->>R: getStories(query) / getStory(slug)
+    R->>API: fetch
+    API-->>R: JSON
+    R-->>C: data
+    C->>VM: _load(data)
+    C->>Outlet: mountOutlet(view, {hydrate: false})
+    C->>B: window.scrollTo(0, 0)
+    end
+```
 
 ## Project structure
 
@@ -81,7 +160,7 @@ client/assets/js/index.js     router bootstrap
 client/assets/js/domain/      one folder per route: handler, controller,
                               repository, viewModel, view
 client/assets/js/components/  reusable UI (loading indicator)
-client/assets/js/utils/       shared helpers (meta, paths)
+client/assets/js/utils/       shared helpers (meta, paths, mount)
 client/assets/css/            styles
 client/assets/js/libs/        dompp, historypp (submodules)
 ```
@@ -160,7 +239,8 @@ block instead of calling the API, so the first paint costs no extra request. The
 
 **Mounting.** `#outlet` is the view container and is replaced on client-side
 navigation. `#portal` lives outside it, so the loading indicator survives a route
-change.
+change. Mounting (hydrate vs replace) is centralized in `utils/mount.js` so no
+controller repeats the `if/else`.
 
 **View state.** `viewModel` is the only mutable state; `view.jsx` subscribes
 through `addListener` and each `document.createComponent` slice re-renders on its
@@ -178,10 +258,14 @@ reference counted so overlapping navigations do not hide each other's spinner.
 The initial server-rendered route is skipped, because there is no transition to
 indicate.
 
+**Scroll.** Every client-side navigation calls `window.scrollTo(0, 0)` inside
+`withLoading`, so each new route starts at the top of the page.
+
 **JSX pipeline.** A request for `/assets/**/*.jsx` is read from disk, compiled by
 `internal/jsxtranspiler` and returned as `application/javascript` with
-`Cache-Control: no-cache`. Everything else under `/assets/` is served as a
-static file.
+`Cache-Control: no-store`. Everything else under `/assets/` is served as a
+static file (also `no-store` so a refactor never leaves stale modules in the
+browser cache).
 
 The factory comes from `main.go`:
 
@@ -215,7 +299,7 @@ comments at the top level.
 ## Notes
 
 - The transpiler is a development convenience: it runs on every request for a
-  `.jsx` file and intentionally sends `Cache-Control: no-cache`.
+  `.jsx` file and intentionally sends `Cache-Control: no-store`.
 - `client/assets/js/factories/elementBuilder.js` and the `bindLinkNavigation`
   helper are currently unused; the runtime builder comes from `dompp`.
 - The 404 page is rendered by `services/stories/web` for unknown paths, and an

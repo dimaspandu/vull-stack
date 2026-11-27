@@ -21,7 +21,7 @@ export function mountOutlet(view, { hydrate = false } = {}) {
   }
 
   if (hydrate) {
-    document.createElement(outlet, { class: "story-page" }, view);
+    document.hydrateElement(outlet, { class: "story-page" }, view);
     return outlet;
   }
 

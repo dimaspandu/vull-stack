@@ -6,9 +6,8 @@ import { withLoading } from "./components/loading/controller.js";
 import listHandler from "./domain/stories/handler.js";
 import showHandler from "./domain/story/handler.js";
 import notFoundHandler from "./domain/not-found/handler.js";
-import {
-  normalizePath
-} from "./utils/common.js";
+
+import { normalizePath } from "./utils/common.js";
 
 // withLoading keeps the transition indicator in one place: every route shows
 // it before the handler runs and hides it when the handler settles.

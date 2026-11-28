@@ -30,11 +30,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 
 	pageData, err := h.Usecase.ListStories(ctx, q)
 	if err != nil {
-		http.Error(
-			w,
-			"Failed to load stories.",
-			http.StatusInternalServerError,
-		)
+		h.InternalServerError(w, "Failed to load stories.")
 		return
 	}
 
@@ -72,17 +68,13 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		http.Error(
-			w,
-			"Failed to load story.",
-			http.StatusInternalServerError,
-		)
+		h.InternalServerError(w, "Failed to load story.")
 		return
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	tmpl, err := template.ParseFiles("client/[id].html")
+	tmpl, err := template.ParseFiles("client/[slug].html")
 	if err != nil {
 		http.Error(
 			w,
@@ -129,5 +121,32 @@ func (h *Handler) NotFound(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusNotFound)
+	_, _ = w.Write(page.Bytes())
+}
+
+// InternalServerError renders the static 500 page for server failures.
+func (h *Handler) InternalServerError(w http.ResponseWriter, message string) {
+	tmpl, err := template.ParseFiles("client/500.html")
+	if err != nil {
+		http.Error(
+			w,
+			"Failed to load template.",
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	var page bytes.Buffer
+	if err := tmpl.Execute(&page, nil); err != nil {
+		http.Error(
+			w,
+			"Failed to render template.",
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusInternalServerError)
 	_, _ = w.Write(page.Bytes())
 }

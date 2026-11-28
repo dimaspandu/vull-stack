@@ -6,7 +6,9 @@ export default function createStoryRepository() {
       const response = await fetch(`/api/stories/${encodeURIComponent(slug)}`);
 
       if (!response.ok) {
-        throw new Error(`Response status: ${response.status}`);
+        const err = new Error(`Response status: ${response.status}`);
+        err.status = response.status;
+        throw err;
       }
 
       const result = await response.json();

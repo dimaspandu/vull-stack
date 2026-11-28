@@ -21,6 +21,10 @@ func (u *Usecase) ListStories(ctx context.Context, q string) (*StoryList, error)
 		return nil, err
 	}
 
+	for i := range stories {
+		stories[i].PublishedAt = formatPublishedAt(stories[i].PublishedAt)
+	}
+
 	storyList := StoryList{
 		Query:   q,
 		Stories: stories,
@@ -35,14 +39,15 @@ func (u *Usecase) GetStoryBySlug(ctx context.Context, slug string) (*Story, erro
 		return nil, err
 	}
 
-	var publishedAt string
-	t, err := time.Parse(time.RFC3339, story.PublishedAt)
-	if err != nil {
-		publishedAt = story.PublishedAt
-	} else {
-		publishedAt = t.Format("January 2, 2006, 3:04 PM")
-	}
-	story.PublishedAt = publishedAt
+	story.PublishedAt = formatPublishedAt(story.PublishedAt)
 
 	return story, nil
+}
+
+func formatPublishedAt(publishedAt string) string {
+	t, err := time.Parse(time.RFC3339, publishedAt)
+	if err != nil {
+		return publishedAt
+	}
+	return t.Format("January 2, 2006, 3:04 PM")
 }

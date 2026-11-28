@@ -50,9 +50,34 @@ function StoryListItem({
   );
 }
 
-function EmptyState({ navigate }) {
+function StoryLayout({ navigate }, children) {
   return (
-    <div class="story-alert" role="status">
+    <div class="story-detail-page__container">
+      <nav
+        class="story-detail-page__navigation"
+        aria-label="Story navigation"
+      >
+        <a
+          class="story-detail-page__back"
+          href="/"
+          data-link
+          onClick={e => {
+            e.preventDefault();
+            navigate("/");
+          }}
+        >
+          ← Back to stories
+        </a>
+      </nav>
+
+      {children}
+    </div>
+  );
+}
+
+function StoryAlert({ role, title, description, icon, navigate }) {
+  return (
+    <div class="story-alert" role={role}>
       <div class="story-alert__icon" aria-hidden="true">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -66,19 +91,17 @@ function EmptyState({ navigate }) {
           stroke-linejoin="round"
         >
           <circle cx="12" cy="12" r="9" />
-          <path d="M12 11v5" />
-          <path d="M12 8h.01" />
+          {icon}
         </svg>
       </div>
 
       <div class="story-alert__content">
-        <h3 class="story-alert__title">
-          No stories found
-        </h3>
+        <h1 class="story-alert__title">
+          {title}
+        </h1>
 
         <p class="story-alert__description">
-          We couldn't find any stories matching your search.
-          Try a different keyword.
+          {description}
         </p>
 
         <a
@@ -90,11 +113,48 @@ function EmptyState({ navigate }) {
             navigate("/");
           }}
         >
-          Browse all stories
-          <span aria-hidden="true">→</span>
+          ← Back to stories
         </a>
       </div>
     </div>
+  );
+}
+
+function EmptyState({ navigate }) {
+  return (
+    <StoryLayout navigate={navigate}>
+      <StoryAlert
+        role="alert"
+        title="404 — Page not found"
+        description="The page you are looking for does not exist or has been moved."
+        icon={
+          <>
+            <path d="M12 8v4" />
+            <path d="M12 16h.01" />
+          </>
+        }
+        navigate={navigate}
+      />
+    </StoryLayout>
+  );
+}
+
+function ErrorState({ navigate }) {
+  return (
+    <StoryLayout navigate={navigate}>
+      <StoryAlert
+        role="alert"
+        title="500 — Server error"
+        description="Something went wrong on our end. Please try again in a moment."
+        icon={
+          <>
+            <path d="M12 8v4" />
+            <path d="M12 16h.01" />
+          </>
+        }
+        navigate={navigate}
+      />
+    </StoryLayout>
   );
 }
 
@@ -137,7 +197,9 @@ export default function createStoriesView(viewModel, navigate) {
         </p>
       </header>
 
-      {viewModel.stories.length > 0 ? (
+      {viewModel.error ? (
+        <ErrorState navigate={navigate} />
+      ) : viewModel.stories.length > 0 ? (
         <ul class="story-list__items" id="story-list-items">
           {viewModel.stories.map(story => <StoryListItem { ...story } navigate={navigate} />)}
         </ul>

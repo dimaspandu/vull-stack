@@ -28,25 +28,58 @@
 </head>
 
 <body>
-  <main class="story-page" id="outlet">
-    <div class="story-alert" role="alert">
+  <main class="story-detail-page" id="outlet">
+    <div class="story-detail-page__container">
 
-      <div class="story-alert__content">
-        <h1 class="story-alert__title">
-          404 — Page not found
-        </h1>
-
-        <p class="story-alert__description">
-          The page you are looking for does not exist or has been moved.
-        </p>
-
+      <nav
+        class="story-detail-page__navigation"
+        aria-label="Story navigation"
+      >
         <a
-          class="story-alert__link"
+          class="story-detail-page__back"
           href="/"
           data-link
         >
           ← Back to stories
         </a>
+      </nav>
+
+      <div class="story-alert" role="alert">
+        <div class="story-alert__icon" aria-hidden="true">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 8v4" />
+            <path d="M12 16h.01" />
+          </svg>
+        </div>
+
+        <div class="story-alert__content">
+          <h1 class="story-alert__title">
+            404 — Page not found
+          </h1>
+
+          <p class="story-alert__description">
+            The page you are looking for does not exist or has been moved.
+          </p>
+
+          <a
+            class="story-alert__link"
+            href="/"
+            data-link
+          >
+            ← Back to stories
+          </a>
+        </div>
       </div>
 
     </div>

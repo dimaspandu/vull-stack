@@ -154,7 +154,7 @@ services/stories/api/         JSON use case (list, show)
 database/schema.sql           table definition
 database/seed.sql             sample rows
 client/index.html             list template (SSR)
-client/[id].html              detail template (SSR)
+client/[slug].html              detail template (SSR)
 client/404.html               fallback template (SSR)
 client/assets/js/index.js     router bootstrap
 client/assets/js/domain/      one folder per route: handler, controller,

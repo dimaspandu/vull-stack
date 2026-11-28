@@ -1,6 +1,9 @@
 package api_stories
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 type Usecase struct {
 	Repo *Repository
@@ -18,6 +21,10 @@ func (u *Usecase) ListStories(ctx context.Context, q string) (*StoryListResponse
 		return nil, err
 	}
 
+	for i := range stories {
+		stories[i].PublishedAt = formatPublishedAt(stories[i].PublishedAt)
+	}
+
 	out := &StoryListResponse{
 		Data: stories,
 	}
@@ -31,9 +38,19 @@ func (u *Usecase) GetStory(ctx context.Context, slug string) (*StoryShowResponse
 		return nil, err
 	}
 
+	story.PublishedAt = formatPublishedAt(story.PublishedAt)
+
 	out := &StoryShowResponse{
 		Data: story,
 	}
 
 	return out, nil
+}
+
+func formatPublishedAt(publishedAt string) string {
+	t, err := time.Parse(time.RFC3339, publishedAt)
+	if err != nil {
+		return publishedAt
+	}
+	return t.Format("January 2, 2006, 3:04 PM")
 }

@@ -60,7 +60,7 @@ flowchart TB
         Srv --> A[services stories api]
         W --> DB[(MySQL)]
         A --> DB
-        W --> HTML[client index.html, id.html, 404.html]
+        W --> HTML[client index.html, [slug].html, 404.html, 500.html]
         Srv --> JS[assets .jsx → JS]
     end
 
@@ -149,13 +149,15 @@ sequenceDiagram
 ```
 main.go                       asset serving, wiring, HTTP server
 internal/jsxtranspiler/       JSX → JS compiler used at request time
-services/stories/web/         HTML use case (list, show, not found)
+services/stories/web/         HTML use case (list, show, not found, server error)
 services/stories/api/         JSON use case (list, show)
+services/admin/               content management domain (backoffice, placeholder)
 database/schema.sql           table definition
 database/seed.sql             sample rows
 client/index.html             list template (SSR)
-client/[slug].html              detail template (SSR)
-client/404.html               fallback template (SSR)
+client/[slug].html            detail template (SSR)
+client/404.html               not found template (SSR)
+client/500.html               server error template (SSR)
 client/assets/js/index.js     router bootstrap
 client/assets/js/domain/      one folder per route: handler, controller,
                               repository, viewModel, view
@@ -303,7 +305,8 @@ comments at the top level.
 - `client/assets/js/factories/elementBuilder.js` and the `bindLinkNavigation`
   helper are currently unused; the runtime builder comes from `dompp`.
 - The 404 page is rendered by `services/stories/web` for unknown paths, and an
-  unknown story slug produces the same page with status 404.
+  unknown story slug produces the same page with status 404. Server failures on
+  the web layer render `client/500.html` with status 500.
 
 ## License
 

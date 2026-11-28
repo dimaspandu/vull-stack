@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.0.1] - 2026-11-28
+
+### Added
+- `client/500.html`: server error page, served with status 500 by `services/stories/web.InternalServerError`.
+- `services/admin/`: placeholder domain for content management (backoffice).
+- `ErrorState` on the stories list view, rendered when `viewModel.error` is set.
+
+### Changed
+- Renamed `client/[id].html` to `client/[slug].html` to match the `/{slug}` route.
+- Story detail 404 now renders `EmptyState` ("Story not found") instead of `ErrorState`; only true server errors render `ErrorState`.
+- Extracted `formatPublishedAt` helper in both `services/stories/api` and `services/stories/web` usecases.
+- `StoryLayout` now wraps detail/error/empty states with `story-detail-page__container` + back navigation for consistent presentation.
+- `repository.getStory` now carries the HTTP status on error so the client can distinguish 404 from 500.
+
 ## [1.0.0] - 2026-11-24
 
 ### Added

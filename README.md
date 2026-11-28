@@ -60,7 +60,7 @@ flowchart TB
         Srv --> A[services stories api]
         W --> DB[(MySQL)]
         A --> DB
-        W --> HTML[client index.html, [slug].html, 404.html, 500.html]
+        W --> HTML["client index.html, [slug].html, 404.html, 500.html"]
         Srv --> JS[assets .jsx → JS]
     end
 
